@@ -102,7 +102,8 @@ async function confirmDelete(){
   finally{btn.disabled=false}
 }
 function shareState(mode=shareMode){const now=getNow();const target=mode==='today'?now.date:addDays(now.date,1);return{target,now}}
-function messageFor(mode){const {target}=shareState(mode);const list=sorted(records.filter(r=>r.date===target));const heading=mode==='today'?"OT LIST FOR TODAY":"OT LIST FOR TOMORROW";return`${heading} (${displayDate(target)})\n\n${list.length?list.map((r,i)=>`${i+1}. ${displayTime(r.time)}\nPatient: ${r.patient||'Pending'}\nAge: ${r.age||'Pending'}\nSex: ${r.sex||'Pending'}\nMR No: ${r.mr||'Pending'}\nSurgery: ${r.surgery}\nSurgeon: ${r.surgeon}\nDepartment: ${r.department}\nAnesthetist: ${r.ana}`).join('\n\n'):'No surgeries scheduled.'}\n\nTotal Cases: ${list.length}`}
+function shareDisplayText(value){const text=String(value??'').trim();return !text||/^pending$/i.test(text)?'-':text}
+function messageFor(mode){const {target}=shareState(mode);const list=sorted(records.filter(r=>r.date===target));const heading=mode==='today'?"OT LIST FOR TODAY":"OT LIST FOR TOMORROW";return`${heading} (${displayDate(target)})\n\n${list.length?list.map((r,i)=>`${i+1}. ${r.time?displayTime(r.time):'-'}\nPatient: ${shareDisplayText(r.patient)}\nAge: ${shareDisplayText(r.age)}\nSex: ${shareDisplayText(r.sex)}\nMR No: ${shareDisplayText(r.mr)}\nSurgery: ${shareDisplayText(r.surgery)}\nSurgeon: ${shareDisplayText(r.surgeon)}\nDepartment: ${shareDisplayText(r.department)}\nAnesthetist: ${shareDisplayText(r.ana)}`).join('\n\n'):'No surgeries scheduled.'}\n\nTotal Cases: ${list.length}`}
 function share(){
  const {target}=shareState();const list=sorted(records.filter(r=>r.date===target));const pending=list.filter(isPending);const signature=messageFor(shareMode);
  $('todayTab').classList.toggle('active',shareMode==='today');$('tomorrowTab').classList.toggle('active',shareMode==='tomorrow');
@@ -134,7 +135,7 @@ function wrapImageText(ctx,text,maxWidth){
  if(line)result.push(line);
  return result.length?result:['—'];
 }
-function imageDisplayText(value){return String(value||'Pending').trim()||'Pending'}
+function imageDisplayText(value){return shareDisplayText(value)}
 async function loadOTImageLogo(){
  const img=new Image();img.src=OT_HOSPITAL_LOGO;
  try{await img.decode();return img}catch(e){return null}
@@ -151,7 +152,7 @@ async function renderOTTableImage(list,mode,date){
    {title:'Surgeon',key:'surgeon',min:330,max:510,weight:1.6,bold:true},
    {title:'Department',key:'department',min:215,max:330,weight:1}
  ];
- const cases=list.map((r,i)=>({no:String(i+1),time:displayTime(r.time),patient:imageDisplayText(r.patient),age:imageDisplayText(r.age),sex:imageDisplayText(r.sex),mr:imageDisplayText(r.mr),surgery:imageDisplayText(r.surgery),surgeon:imageDisplayText(r.surgeon),department:imageDisplayText(r.department)}));
+ const cases=list.map((r,i)=>({no:String(i+1),time:r.time?displayTime(r.time):'-',patient:imageDisplayText(r.patient),age:imageDisplayText(r.age),sex:imageDisplayText(r.sex),mr:imageDisplayText(r.mr),surgery:imageDisplayText(r.surgery),surgeon:imageDisplayText(r.surgeon),department:imageDisplayText(r.department)}));
  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
  if(!ctx)throw new Error('Image generation is not supported in this browser.');
  const fontRegular='30px Arial, sans-serif',fontBold='bold 31px Arial, sans-serif';
@@ -167,9 +168,9 @@ async function renderOTTableImage(list,mode,date){
  const logo=await loadOTImageLogo();
  const logoBox={width:420,height:160,top:36,right:margin};
  const leftHeaderMax=width-margin*3-logoBox.width;
- const anas=[...new Set(list.map(r=>String(r.ana||'Pending').trim()).filter(Boolean))];
+ const anas=[...new Set(list.map(r=>imageDisplayText(r.ana)).filter(Boolean))];
  // If different anesthetists are used, label cases individually in the header.
- let anesthesiaText='Anesthetist: '+(anas.length===1?anas[0]:anas.length===0?'Pending':
+ let anesthesiaText='Anesthetist: '+(anas.length===1?anas[0]:anas.length===0?'-':
    list.map((r,i)=>(i+1)+': '+imageDisplayText(r.ana)).join('  |  '));
  ctx.font='bold 28px Arial, sans-serif';
  const anesthesiaLines=wrapImageText(ctx,anesthesiaText,leftHeaderMax);
