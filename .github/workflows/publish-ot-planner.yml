@@ -1,0 +1,64 @@
+name: Publish OT Planner ZIP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'OT_Planner_Update.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-ot-planner
+  cancel-in-progress: false
+
+jobs:
+  extract-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Check and extract app package
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile, stat
+          archive = Path('OT_Planner_Update.zip')
+          if not archive.is_file():
+              raise SystemExit('Upload OT_Planner_Update.zip to the repository root.')
+          required = {'index.html','schema.sql','functions/api/_middleware.js','functions/api/cases.js','functions/api/cases/[id].js'}
+          allowed = required | {'README.md'}
+          with zipfile.ZipFile(archive) as z:
+              members = [f for f in z.infolist() if not f.is_dir()]
+              names = [f.filename for f in members]
+              if not required.issubset(names) or len(set(names)) != len(names) or set(names)-allowed:
+                  raise SystemExit('Invalid package: files are missing, duplicated, or unexpected. ZIP the app files directly, without a parent folder.')
+              if sum(f.file_size for f in members) > 10_000_000:
+                  raise SystemExit('ZIP contents are too large.')
+              for f in members:
+                  if stat.S_ISLNK(f.external_attr >> 16):
+                      raise SystemExit('ZIP symlinks are prohibited.')
+                  target = Path(f.filename)
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(z.read(f))
+          Path('public').mkdir(exist_ok=True)
+          Path('public/index.html').write_bytes(Path('index.html').read_bytes())
+          print('OT Planner extracted; public/index.html prepared for Cloudflare Pages.')
+          PY
+      - name: Commit published app files
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html schema.sql README.md functions/ public/index.html
+          if git diff --cached --quiet; then
+            echo 'No website file changes needed.'
+          else
+            git commit -m 'Publish OT Planner update from ZIP'
+            git push
+          fi
