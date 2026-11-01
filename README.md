@@ -20,3 +20,5 @@ Update: Removed manual verification checkbox. Copy and WhatsApp remain available
 Update: autocomplete dropdown immediately closes after a choice and stays closed until the user edits that field; added one-image PNG table generation, Android native file-sharing where supported, and PNG-download fallback. Text sharing is unchanged.
 
 Update: WhatsApp image export now uses a larger-font, content-sized seven-column table (no anesthetist column), with surgery and surgeon bold. Rivershore Hospital's provided logo is embedded into the top-right header and anesthetist details are shown below the OT heading. For multiple anesthetists the header identifies each numbered case. Text sharing remains unchanged. No schema changes.
+
+Image layout update: table columns are ordered No., Time, Patient, MR No., Surgery, Surgeon, Department, with the anesthetist in the heading. Column widths are measured from content, long values wrap, and font sizes scale to the number of cases. Hospital logo and existing text sharing are preserved.
