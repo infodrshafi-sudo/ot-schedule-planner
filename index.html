@@ -102,7 +102,7 @@ async function confirmDelete(){
   finally{btn.disabled=false}
 }
 function shareState(mode=shareMode){const now=getNow();const target=mode==='today'?now.date:addDays(now.date,1);return{target,now}}
-function messageFor(mode){const {target}=shareState(mode);const list=sorted(records.filter(r=>r.date===target));const heading=mode==='today'?"OT LIST FOR TODAY":"OT LIST FOR TOMORROW";return`${heading} (${displayDate(target)})\n\n${list.length?list.map((r,i)=>`${i+1}. ${displayTime(r.time)}\nPatient: ${r.patient||'Pending'}\nMR No: ${r.mr||'Pending'}\nSurgery: ${r.surgery}\nSurgeon: ${r.surgeon}\nDepartment: ${r.department}\nAnesthetist: ${r.ana}`).join('\n\n'):'No surgeries scheduled.'}\n\nTotal Cases: ${list.length}`}
+function messageFor(mode){const {target}=shareState(mode);const list=sorted(records.filter(r=>r.date===target));const heading=mode==='today'?"OT LIST FOR TODAY":"OT LIST FOR TOMORROW";return`${heading} (${displayDate(target)})\n\n${list.length?list.map((r,i)=>`${i+1}. ${displayTime(r.time)}\nSurgery: ${r.surgery}\nPatient: ${r.patient||'Pending'}\nMR No: ${r.mr||'Pending'}\nDepartment: ${r.department}\nSurgeon: ${r.surgeon}\nAnesthetist: ${r.ana}`).join('\n\n'):'No surgeries scheduled.'}\n\nTotal Cases: ${list.length}`}
 function share(){
  const {target}=shareState();const list=sorted(records.filter(r=>r.date===target));const pending=list.filter(isPending);const signature=messageFor(shareMode);
  $('todayTab').classList.toggle('active',shareMode==='today');$('tomorrowTab').classList.toggle('active',shareMode==='tomorrow');
@@ -140,79 +140,54 @@ async function loadOTImageLogo(){
  try{await img.decode();return img}catch(e){return null}
 }
 async function renderOTTableImage(list,mode,date){
- // One PNG for the entire OT list; the largest practical font for the case count.
- const caseCount=list.length;
- const textSize=caseCount<=2?43:caseCount<=4?39:caseCount<=6?35:caseCount<=9?31:28;
- const headerSize=Math.max(23,Math.round(textSize*.76));
- const paddingX=Math.max(13,Math.round(textSize*.34));
- const lineHeight=Math.round(textSize*1.34);
  const columns=[
-   {title:'No.',key:'no',min:60,max:83},
-   {title:'Time',key:'time',min:155,max:205},
-   {title:'Patient',key:'patient',min:188,max:355},
-   {title:'MR No.',key:'mr',min:140,max:200},
-   {title:'Surgery',key:'surgery',min:260,max:530,bold:true},
-   {title:'Surgeon',key:'surgeon',min:250,max:500,bold:true},
-   {title:'Department',key:'department',min:200,max:355}
+   {title:'No.',key:'no',min:75,max:90,weight:.4},
+   {title:'Time',key:'time',min:148,max:190,weight:.7},
+   {title:'Surgery',key:'surgery',min:330,max:540,weight:1.7,bold:true},
+   {title:'Department',key:'department',min:215,max:330,weight:1},
+   {title:'Patient',key:'patient',min:245,max:380,weight:1.1},
+   {title:'MR No.',key:'mr',min:165,max:220,weight:.6},
+   {title:'Surgeon',key:'surgeon',min:330,max:510,weight:1.6,bold:true}
  ];
- const cases=list.map((r,i)=>({no:String(i+1),time:displayTime(r.time),patient:imageDisplayText(r.patient),mr:imageDisplayText(r.mr),surgery:imageDisplayText(r.surgery),surgeon:imageDisplayText(r.surgeon),department:imageDisplayText(r.department)}));
+ const cases=list.map((r,i)=>({no:String(i+1),time:displayTime(r.time),surgery:imageDisplayText(r.surgery),department:imageDisplayText(r.department),patient:imageDisplayText(r.patient),mr:imageDisplayText(r.mr),surgeon:imageDisplayText(r.surgeon)}));
  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
  if(!ctx)throw new Error('Image generation is not supported in this browser.');
- const regular=`${textSize}px Arial, sans-serif`,bold=`bold ${textSize}px Arial, sans-serif`;
- // Measure cell contents, including the heading. Give narrow fields less space,
- // long fields more space, while wrapping long names to prevent clipping.
- for(const col of columns){
-   ctx.font=`bold ${headerSize}px Arial, sans-serif`;
-   const headingWidth=ctx.measureText(col.title).width;
-   ctx.font=col.bold?bold:regular;
-   const measured=cases.map(c=>ctx.measureText(c[col.key]).width);
-   const longest=measured.length?Math.max(...measured):0;
-   // Do not force the whole column to the longest text width: wrap large values.
-   const requested=Math.max(headingWidth+paddingX*2+8,longest+paddingX*2+6);
-   col.w=Math.round(Math.max(col.min,Math.min(col.max,requested)));
- }
- // Prevent a short table from becoming excessively wide; use balanced space.
- const minTotal=columns.reduce((sum,c)=>sum+c.min,0);
- const total=columns.reduce((sum,c)=>sum+c.w,0);
- const targetWidth=Math.max(minTotal,Math.min(1850,total));
- if(total>targetWidth){
-   let excess=total-targetWidth;
-   for(let round=0;round<4&&excess>1;round++){
-     const room=columns.reduce((sum,c)=>sum+Math.max(0,c.w-c.min),0);
-     if(!room)break;
-     for(const col of columns){
-       const take=Math.min(col.w-col.min,excess*Math.max(0,col.w-col.min)/room);
-       col.w-=take;
-     }
-     excess=columns.reduce((sum,c)=>sum+c.w,0)-targetWidth;
-   }
-   columns.forEach(col=>col.w=Math.max(col.min,Math.round(col.w)));
- }
- const margin=40,tableWidth=columns.reduce((sum,c)=>sum+c.w,0),width=tableWidth+margin*2;
+ const fontRegular='30px Arial, sans-serif',fontBold='bold 31px Arial, sans-serif';
+ // Calculate column widths using actual field content, with reasonable caps.
+ columns.forEach(col=>{
+   ctx.font='bold 27px Arial, sans-serif';
+   let measured=ctx.measureText(col.title).width;
+   ctx.font=col.bold?fontBold:fontRegular;
+   for(const c of cases)measured=Math.max(measured,ctx.measureText(c[col.key]).width);
+   col.w=Math.min(col.max,Math.max(col.min,Math.ceil(measured+38)));
+ });
+ const margin=45,tableWidth=columns.reduce((sum,col)=>sum+col.w,0),width=tableWidth+2*margin;
  const logo=await loadOTImageLogo();
- const logoBox={width:Math.min(380,width*.27),height:143,top:27};
- const headerTextWidth=width-margin*3-logoBox.width;
- const anesthetists=[...new Set(list.map(r=>String(r.ana||'Pending').trim()).filter(Boolean))];
- const anesthesiaText='Anesthetist: '+(anesthetists.length===1?anesthetists[0]:anesthetists.length===0?'Pending':
+ const logoBox={width:420,height:160,top:36,right:margin};
+ const leftHeaderMax=width-margin*3-logoBox.width;
+ const anas=[...new Set(list.map(r=>String(r.ana||'Pending').trim()).filter(Boolean))];
+ // If different anesthetists are used, label cases individually in the header.
+ let anesthesiaText='Anesthetist: '+(anas.length===1?anas[0]:anas.length===0?'Pending':
    list.map((r,i)=>(i+1)+': '+imageDisplayText(r.ana)).join('  |  '));
- ctx.font='bold 29px Arial, sans-serif';
- const anesthesiaLines=wrapImageText(ctx,anesthesiaText,headerTextWidth);
- const headerTop=Math.max(225,153+anesthesiaLines.length*41);
- const headingHeight=Math.max(65,headerSize+39),cellPadTop=Math.round(textSize*.42),cellPadBottom=Math.round(textSize*.46);
+ ctx.font='bold 28px Arial, sans-serif';
+ const anesthesiaLines=wrapImageText(ctx,anesthesiaText,leftHeaderMax);
+ const headerTop=Math.max(230,146+anesthesiaLines.length*41);
+ const headingHeight=66,lineHeight=42,cellPadTop=22,cellPadBottom=22;
  const wrapped=cases.map(c=>columns.map(col=>{
-   ctx.font=col.bold?bold:regular;
-   return wrapImageText(ctx,c[col.key],Math.max(24,col.w-paddingX*2));
+   ctx.font=col.bold?fontBold:fontRegular;
+   return wrapImageText(ctx,c[col.key],col.w-28);
  }));
- const rowHeights=wrapped.map(row=>Math.max(Math.round(textSize*2.3),...row.map(lines=>cellPadTop+cellPadBottom+lines.length*lineHeight)));
- const height=headerTop+headingHeight+rowHeights.reduce((a,b)=>a+b,0)+103;
- // A high-resolution PNG sharp enough for zooming in WhatsApp.
+ const rowHeights=wrapped.map(row=>Math.max(92,...row.map(a=>cellPadTop+cellPadBottom+a.length*lineHeight)));
+ const footerHeight=102;
+ const height=headerTop+headingHeight+rowHeights.reduce((a,b)=>a+b,0)+footerHeight;
  const scale=2;canvas.width=Math.ceil(width*scale);canvas.height=Math.ceil(height*scale);ctx.scale(scale,scale);
  ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
- // Keep heading size as previously requested.
+ // Preserve the heading size while allowing more room for case information.
  ctx.fillStyle='#163b55';ctx.font='bold 39px Arial, sans-serif';
  ctx.fillText(mode==='today'?'OT LIST FOR TODAY':'OT LIST FOR TOMORROW',margin,67);
- ctx.font='25px Arial, sans-serif';ctx.fillStyle='#506778';ctx.fillText('Date: '+displayDate(date),margin,110);
- ctx.font='bold 29px Arial, sans-serif';ctx.fillStyle='#164d71';
+ ctx.font='25px Arial, sans-serif';ctx.fillStyle='#506778';
+ ctx.fillText('Date: '+displayDate(date),margin,111);
+ ctx.font='bold 28px Arial, sans-serif';ctx.fillStyle='#164d71';
  anesthesiaLines.forEach((line,i)=>ctx.fillText(line,margin,153+i*41));
  if(logo){
    const proportion=Math.min(logoBox.width/logo.naturalWidth,logoBox.height/logo.naturalHeight);
@@ -221,21 +196,23 @@ async function renderOTTableImage(list,mode,date){
  }
  let y=headerTop,x=margin;
  ctx.fillStyle='#164d71';ctx.fillRect(margin,y,tableWidth,headingHeight);
- ctx.fillStyle='#fff';ctx.font=`bold ${headerSize}px Arial, sans-serif`;
- for(const col of columns){ctx.fillText(col.title,x+paddingX,y+(headingHeight+headerSize)/2-3);x+=col.w;}
+ ctx.fillStyle='#fff';ctx.font='bold 27px Arial, sans-serif';
+ for(const col of columns){ctx.fillText(col.title,x+14,y+43);x+=col.w;}
  y+=headingHeight;
  for(let i=0;i<cases.length;i++){
-   const rh=rowHeights[i],row=wrapped[i];ctx.fillStyle=i%2?'#fff':'#f1f7fa';ctx.fillRect(margin,y,tableWidth,rh);
+   const rh=rowHeights[i],row=wrapped[i];
+   ctx.fillStyle=i%2?'#fff':'#f1f7fa';ctx.fillRect(margin,y,tableWidth,rh);
    x=margin;
    for(let j=0;j<columns.length;j++){
-     const col=columns[j];ctx.font=col.bold?bold:regular;ctx.fillStyle='#193a50';
-     row[j].forEach((line,k)=>ctx.fillText(line,x+paddingX,y+cellPadTop+textSize+k*lineHeight));
-     ctx.strokeStyle='#cbdce6';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+rh);ctx.stroke();x+=col.w;
+     const col=columns[j];ctx.font=col.bold?fontBold:fontRegular;ctx.fillStyle='#193a50';
+     for(let k=0;k<row[j].length;k++)ctx.fillText(row[j][k],x+14,y+cellPadTop+30+k*lineHeight);
+     ctx.strokeStyle='#cbdce6';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+rh);ctx.stroke();
+     x+=col.w;
    }
    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+rh);ctx.stroke();
    ctx.beginPath();ctx.moveTo(margin,y+rh);ctx.lineTo(margin+tableWidth,y+rh);ctx.stroke();y+=rh;
  }
- ctx.fillStyle='#153e56';ctx.font='bold 31px Arial, sans-serif';ctx.fillText('Total Cases: '+cases.length,margin,y+57);
+ ctx.font='bold 31px Arial, sans-serif';ctx.fillStyle='#153e56';ctx.fillText('Total Cases: '+cases.length,margin,y+56);
  return canvas;
 }
 function canvasToPng(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Could not create PNG image.')),'image/png'))}
