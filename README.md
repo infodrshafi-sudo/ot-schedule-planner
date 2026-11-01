@@ -7,7 +7,7 @@ Replace the existing `OT_Planner_Update.zip` in the root of your GitHub reposito
 - Redesigned responsive dashboard with today, tomorrow and pending case counts, clear Ready/Pending badges and larger tap targets.
 - Fixed bottom navigation on mobile; existing desktop navigation retained.
 - Date arrows, Today/Tomorrow shortcuts, seven-day strip, department/search filters, and All/Ready/Pending filters.
-- OT list verification with case-count, complete/pending counts and a review list. A checkbox must be confirmed before copying or sharing; fresh D1 records are fetched immediately before sharing, and changes require re-verification.
+- OT list verification with case-count, complete/pending counts and a review list. No confirmation checkbox; fresh D1 records are fetched before sharing and changed lists prompt review.
 - Single surgery form unchanged, with five required fields and optional time, patient, MR; existing auto-complete behavior and preloaded lists unchanged.
 - Today's and tomorrow's OT lists can be prepared anytime.
 
@@ -18,3 +18,5 @@ Update: Removed manual verification checkbox. Copy and WhatsApp remain available
 
 
 Update: autocomplete dropdown immediately closes after a choice and stays closed until the user edits that field; added one-image PNG table generation, Android native file-sharing where supported, and PNG-download fallback. Text sharing is unchanged.
+
+Update: WhatsApp image export now uses a larger-font, content-sized seven-column table (no anesthetist column), with surgery and surgeon bold. Rivershore Hospital's provided logo is embedded into the top-right header and anesthetist details are shown below the OT heading. For multiple anesthetists the header identifies each numbered case. Text sharing remains unchanged. No schema changes.
