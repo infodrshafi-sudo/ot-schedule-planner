@@ -20,3 +20,14 @@ Update: Removed manual verification checkbox. Copy and WhatsApp remain available
 Update: autocomplete dropdown immediately closes after a choice and stays closed until the user edits that field; added one-image PNG table generation, Android native file-sharing where supported, and PNG-download fallback. Text sharing is unchanged.
 
 Update: WhatsApp image export now uses a larger-font, content-sized seven-column table (no anesthetist column), with surgery and surgeon bold. Rivershore Hospital's provided logo is embedded into the top-right header and anesthetist details are shown below the OT heading. For multiple anesthetists the header identifies each numbered case. Text sharing remains unchanged. No schema changes.
+
+## Age and sex fields — required one-time D1 migration
+
+In Cloudflare Dashboard, open **Workers & Pages → D1 → your existing OT database → Console**. Run these two commands separately, once each:
+
+```sql
+ALTER TABLE surgeries ADD COLUMN age TEXT NOT NULL DEFAULT '';
+ALTER TABLE surgeries ADD COLUMN sex TEXT NOT NULL DEFAULT '';
+```
+
+The form includes optional Patient Age and Patient Sex fields. They appear in the case details, WhatsApp text, and exported table image. Existing records remain intact and show these fields as pending until entered. Do not run either ALTER command more than once.
