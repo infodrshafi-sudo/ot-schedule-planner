@@ -13,3 +13,8 @@ Replace the existing `OT_Planner_Update.zip` in the root of your GitHub reposito
 
 ## Caution
 The web app is publicly editable with **no access code or login**. Anyone with the URL can potentially view, alter or delete cases. **Only use synthetic test records** and never enter real patient-identifiable information. Database records persist in the existing D1 database, which this ZIP does not recreate.
+
+Update: Removed manual verification checkbox. Copy and WhatsApp remain available when cloud is online; fresh D1 data is checked on each share, and changed lists require another review.
+
+
+Update: autocomplete dropdown immediately closes after a choice and stays closed until the user edits that field; added one-image PNG table generation, Android native file-sharing where supported, and PNG-download fallback. Text sharing is unchanged.
