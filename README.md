@@ -1,15 +1,15 @@
-# OT Schedule Planner — Open Shared Cloud Edition
+# OT Planner — redesigned mobile UI and final-list verification
 
-This version opens immediately without a staff access code. All visitors with the public Cloudflare Pages URL can view, add, edit and delete surgeries in the same D1 database. Suitable for **test data only**; do not enter real patient-identifiable data into this publicly editable version.
+## Deploy from Android
+Replace the existing `OT_Planner_Update.zip` in the root of your GitHub repository, commit, then verify the green GitHub Actions checkmark and Cloudflare Pages deployment. Do not extract the ZIP. Keep the existing D1 database binding `DB` and existing D1 database. No SQL migration is required.
 
-## Android update
+## Included
+- Redesigned responsive dashboard with today, tomorrow and pending case counts, clear Ready/Pending badges and larger tap targets.
+- Fixed bottom navigation on mobile; existing desktop navigation retained.
+- Date arrows, Today/Tomorrow shortcuts, seven-day strip, department/search filters, and All/Ready/Pending filters.
+- OT list verification with case-count, complete/pending counts and a review list. A checkbox must be confirmed before copying or sharing; fresh D1 records are fetched immediately before sharing, and changes require re-verification.
+- Single surgery form unchanged, with five required fields and optional time, patient, MR; existing auto-complete behavior and preloaded lists unchanged.
+- Today's and tomorrow's OT lists can be prepared anytime.
 
-Upload `OT_Planner_Update.zip` to the root of the existing GitHub repository, replacing the old ZIP of the same name. The existing **Publish OT Planner ZIP** GitHub Action extracts it and publishes `public/index.html` plus Pages Functions. GitHub Actions must finish with a green checkmark; then Cloudflare Pages must deploy the resulting Git commit. Do not extract the ZIP on your phone.
-
-The existing Cloudflare Pages **D1 database binding** named `DB` to `ot-planner-db` must remain connected. **Do not delete or recreate the D1 database or rerun destructive SQL.** The `OT_ACCESS_CODE` secret is no longer used by this release and can be deleted later from the Cloudflare settings; removing the secret alone cannot remove the old login screen unless the new ZIP is deployed.
-
-## Features
-
-Mandatory: date, surgery, department, surgeon, anesthetist. Optional and editable later: time, patient name, MR number. Includes search, department filters, autocomplete, duplicate warnings, confirmation before deleting, time sorting, IST sharing windows, and WhatsApp-ready numbered list. Shared records refresh roughly every 30 seconds.
-
-Caution: Anyone who knows or discovers the URL can modify or erase records. There is no login, account audit trail or abuse protection. Never use real patient identifiers in this public build; consider Cloudflare Access if you later need a restricted clinical deployment.
+## Caution
+The web app is publicly editable with **no access code or login**. Anyone with the URL can potentially view, alter or delete cases. **Only use synthetic test records** and never enter real patient-identifiable information. Database records persist in the existing D1 database, which this ZIP does not recreate.
