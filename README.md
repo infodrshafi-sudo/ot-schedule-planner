@@ -1,39 +1,15 @@
-# OT Schedule Planner — Shared Cloudflare Edition
+# OT Schedule Planner — Open Shared Cloud Edition
 
-The app uses **Cloudflare Pages Functions** and **Cloudflare D1**. Cases are not stored in browser localStorage. Everyone with the correct shared staff access code sees the same central schedule. **The site is not live until deployed and configured.**
+This version opens immediately without a staff access code. All visitors with the public Cloudflare Pages URL can view, add, edit and delete surgeries in the same D1 database. Suitable for **test data only**; do not enter real patient-identifiable data into this publicly editable version.
 
-## Deploy without coding (GitHub + Cloudflare dashboard)
+## Android update
 
-1. Create a **private** GitHub repository, for example `ot-schedule-planner`.
-2. Unzip this ZIP locally. Upload **the contents** of this folder to the **root** of your GitHub repository. Preserve the `functions/api/` folder structure. The ZIP itself must not be uploaded as the only file.
-3. In the Cloudflare dashboard, open **Workers & Pages > Create application > Pages > Connect to Git**; connect the GitHub repository. Build settings: **Framework preset = None**, **Build command = leave blank** (if required, use `exit 0`), **Build output directory = `.`**, **root directory = repository root**.
-4. In the Cloudflare dashboard, create a D1 database named `ot-planner-db` (Workers & Pages / Storage & databases / D1, depending on interface). Open its **Console**, paste the contents of `schema.sql`, and **Execute**. This creates the surgery table.
-5. Open your **Pages** project > **Settings > Bindings > Add > D1 database**. Set the **variable name** exactly `DB` and choose `ot-planner-db`.
-6. In your Pages project > **Settings > Variables and Secrets** (or Environment variables), create the secret `OT_ACCESS_CODE` containing a strong staff-shared code **at least 12 characters**. Do not put the code into GitHub or the HTML. Configure for **Production**, and Preview too if you intend to use preview URLs.
-7. **Redeploy** the Pages project after adding the binding and secret (Deployments > Retry deployment or trigger a new commit).
-8. Open the `https://<your-project>.pages.dev` website in two different devices. Enter the same staff code on each, add a **test** surgery on one device, and verify that it appears on the other device within about 30 seconds (or upon reopening the page).
+Upload `OT_Planner_Update.zip` to the root of the existing GitHub repository, replacing the old ZIP of the same name. The existing **Publish OT Planner ZIP** GitHub Action extracts it and publishes `public/index.html` plus Pages Functions. GitHub Actions must finish with a green checkmark; then Cloudflare Pages must deploy the resulting Git commit. Do not extract the ZIP on your phone.
 
-## Existing local-only data
+The existing Cloudflare Pages **D1 database binding** named `DB` to `ot-planner-db` must remain connected. **Do not delete or recreate the D1 database or rerun destructive SQL.** The `OT_ACCESS_CODE` secret is no longer used by this release and can be deleted later from the Cloudflare settings; removing the secret alone cannot remove the old login screen unless the new ZIP is deployed.
 
-Earlier versions stored cases in the browser. This new package **does not copy** them to D1. Re-enter test cases manually; do not delete the older browser data until you have verified the online cases.
+## Features
 
-## Editing and sharing
+Mandatory: date, surgery, department, surgeon, anesthetist. Optional and editable later: time, patient name, MR number. Includes search, department filters, autocomplete, duplicate warnings, confirmation before deleting, time sorting, IST sharing windows, and WhatsApp-ready numbered list. Shared records refresh roughly every 30 seconds.
 
-- Mandatory at creation: surgery date, surgery name, department, surgeon and anesthetist.
-- Optional: time, patient, MR number; they can be added later by editing.
-- All connected staff can add/edit/delete. Deletion removes from the active schedule.
-- The app warns of possible duplicates, offers autocomplete, filters and a chronological list.
-- Tomorrow sharing: 12:00 PM–10:00 PM IST. Today sharing: 12:00 AM–8:30 AM IST. Preview remains possible outside these periods.
-- A case changed concurrently on another device is rejected with a refresh message rather than silently overwriting it.
-
-## Security and use
-
-This is a functional **staff-shared-code prototype**, not a production-grade patient information system. The shared code provides only coarse access control and no individual-user audit trail. Do **not** put identifiable real patients into it without the hospital's approval and an appropriate privacy, access-control, retention and security review. A private GitHub repository does not make a publicly accessible Pages URL private. Use strong secret, rotate when needed, restrict site access through Cloudflare Access if desired, and review backup/recovery requirements. The server validates all edits and stores cases in D1. Client retains the access code in sessionStorage for that browser tab/session, not persistent localStorage. Use HTTPS only.
-
-## Project files
-
-- `index.html`: frontend
-- `functions/api/_middleware.js`: shared-code check for all API calls
-- `functions/api/cases.js`: list/create
-- `functions/api/cases/[id].js`: edit/delete with conflict detection
-- `schema.sql`: run once in the D1 Console
+Caution: Anyone who knows or discovers the URL can modify or erase records. There is no login, account audit trail or abuse protection. Never use real patient identifiers in this public build; consider Cloudflare Access if you later need a restricted clinical deployment.
