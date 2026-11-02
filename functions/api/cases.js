@@ -1,10 +1,12 @@
-const FIELDS=['date','time','surgery','department','patient','mr','surgeon','ana'];
-const MAX={date:10,time:5,surgery:130,department:80,patient:100,mr:60,surgeon:100,ana:100};
+const FIELDS=['date','time','surgery','department','patient','age','sex','mr','surgeon','ana'];
+const MAX={date:10,time:5,surgery:130,department:80,patient:100,age:3,sex:6,mr:60,surgeon:100,ana:100};
 const invalid=(message,status=400)=>Response.json({error:message},{status});
 const validated = input => {
   const p={}; for(const key of FIELDS){if(typeof input?.[key]!=='string') return null;p[key]=input[key].trim().replace(/\s+/g,' ');if(p[key].length>MAX[key]) return null;}
   if(!/^\d{4}-\d{2}-\d{2}$/.test(p.date)||!Number.isFinite(Date.parse(p.date+'T00:00:00Z')))return null;
   if(p.time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(p.time))return null;
+  if(p.age&&(!/^(?:[0-9]|[1-9][0-9]|1[01][0-9]|120)$/.test(p.age)))return null;
+  if(p.sex&&!['M','F','Other'].includes(p.sex))return null;
   if(['surgery','department','surgeon','ana'].some(k=>!p[k])) return null;
   return p;
 };
@@ -18,7 +20,7 @@ export async function onRequestPost({request,env}){
   let body;try{body=await request.json()}catch{return invalid('Invalid JSON')}
   const p=validated(body);if(!p)return invalid('Invalid or missing surgery details.');
   const id=crypto.randomUUID(),now=new Date().toISOString();
-  try{await env.DB.prepare('INSERT INTO surgeries (id,date,time,surgery,department,patient,mr,surgeon,ana,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(id,p.date,p.time,p.surgery,p.department,p.patient,p.mr,p.surgeon,p.ana,now,now).run();return Response.json({case:{...p,id,createdAt:now,updatedAt:now}},{status:201});}
+  try{await env.DB.prepare('INSERT INTO surgeries (id,date,time,surgery,department,patient,age,sex,mr,surgeon,ana,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,p.date,p.time,p.surgery,p.department,p.patient,p.age,p.sex,p.mr,p.surgeon,p.ana,now,now).run();return Response.json({case:{...p,id,createdAt:now,updatedAt:now}},{status:201});}
   catch(e){return invalid('Could not save to cloud database.',500)}
 }
 export {validated,invalid};

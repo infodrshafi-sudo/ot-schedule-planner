@@ -1,17 +1,25 @@
-# Rivershore Hospital OT Planner — UI refresh
+# Rivershore Hospital OT Planner — Card-style WhatsApp PNG
 
-## Deploy from Android
-Upload this ZIP **without extracting it** as `OT_Planner_Update.zip` to the root of your existing GitHub repository. The existing GitHub Actions workflow extracts it and Cloudflare Pages deploys the changed files. Check GitHub Actions and Cloudflare deployments.
+## REQUIRED: One-time D1 database migration before deploying this version
+The app now supports optional Age and Sex. In Cloudflare Dashboard → D1 → ot-planner-db → Console, execute these two statements **one at a time**:
 
-## Improvements
-- Large full-width Add New Surgery action; clearer dashboard and helpful empty screens.
-- Existing **single** surgery form, ordered as Date, Surgery, Department, Surgeon and Anesthetist, with optional Time/Patient/MR below on the same form.
-- Prominent Save and Save & Add Another actions. For repeated cases, the latter carries forward the surgery date and anesthetist but clears patient information.
-- Larger form labels, inputs, surgery cards and navigation touch targets.
-- Existing date arrows, Today/Tomorrow shortcuts, seven-day calendar strip, department, search and completion-status filters retained.
-- Improved fixed Android bottom navigation, sharing action hierarchy and cloud status/manual refresh.
-- Existing WhatsApp text and PNG table image sharing retained, including Rivershore logo. Reduced No. column width.
-- Existing autocomplete and Cloudflare D1 API unchanged. No SQL migration.
+```sql
+ALTER TABLE surgeries ADD COLUMN age TEXT NOT NULL DEFAULT '';
+ALTER TABLE surgeries ADD COLUMN sex TEXT NOT NULL DEFAULT '';
+```
+
+If a statement says `duplicate column name`, that column already exists; do not repeat it. Existing surgery records are preserved. This migration is required only once; do not rerun it with every ZIP update.
+
+## Android GitHub update
+Upload **OT_Planner_Update.zip** unchanged to the repository root, using the existing GitHub Actions extractor. Wait for a green Actions check and successful Cloudflare Pages deployment.
+
+## Image sharing
+- Image sharing now creates a **single vertical PNG** with a Rivershore logo, OT date, and **one separate rounded card per surgery**.
+- Each card shows Time, Patient Name, Age, Sex (left); Surgery, Department, Surgeon, and **Anesthetist highlighted below surgeon** (right).
+- Surgery and surgeon names are bold; long names wrap within their cards; number badge is narrow.
+- Existing WhatsApp plain-text sharing is unchanged.
+- Age/Sex are optional on the existing single surgery scheduling form; blank fields show an em dash in the image.
+- Cloudflare D1 remains the sole shared data store; nothing moves to per-browser records.
 
 ## Important
-The app remains **publicly editable** without a login. Restrict it to fictional test data. Anyone with the URL may view, alter or delete records. A green deployment check is not a security or end-to-end browser test.
+The app has no staff login and remains publicly editable. Use fictional test patients only until access controls are introduced. Browser-based image sharing on your Android device should be tested after deployment.
