@@ -23,3 +23,9 @@ Upload **OT_Planner_Update.zip** unchanged to the repository root, using the exi
 
 ## Important
 The app has no staff login and remains publicly editable. Use fictional test patients only until access controls are introduced. Browser-based image sharing on your Android device should be tested after deployment.
+
+## Latest changes
+- Main "Add New Surgery" actions are now labelled **Post New Case**.
+- When using **Post New Case** from the Schedule screen, the form starts with the date selected in the Schedule calendar; the date remains editable. Save & Post Another Case retains the saved date.
+- The sharing screen now presents only one large **green Share Image to WhatsApp** button. No Share Text, Copy Text, or Download PNG actions appear. Image sharing uses the native Android share sheet when supported; browsers without file sharing automatically download a PNG so it can be attached in WhatsApp.
+- Case-card image design, autocomplete, Cloudflare D1 API and schema remain unchanged.
