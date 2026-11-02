@@ -7,8 +7,6 @@ CREATE TABLE IF NOT EXISTS surgeries (
   surgeon TEXT NOT NULL,
   ana TEXT NOT NULL,
   patient TEXT NOT NULL DEFAULT '',
-  age TEXT NOT NULL DEFAULT '',
-  sex TEXT NOT NULL DEFAULT '',
   mr TEXT NOT NULL DEFAULT '',
   createdAt TEXT NOT NULL,
   updatedAt TEXT NOT NULL
