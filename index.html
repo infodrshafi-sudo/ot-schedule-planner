@@ -17,10 +17,13 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 /* WhatsApp-only image share: one full-width, high-visibility green action. */
-.whatsapp-image-button{width:100%;min-height:64px;background:#25D366!important;color:#fff!important;border:1px solid #1ca653!important;font-weight:800;font-size:18px;box-shadow:0 8px 18px rgba(37,211,102,.17)}
-.whatsapp-image-button:not(:disabled):hover{background:#20bd5a!important}
+.whatsapp-image-button{width:100%;min-height:64px;background:linear-gradient(115deg,#25D366 0%,#25D366 45%,#1EBE5A 100%)!important;color:#fff!important;border:1px solid #1ca653!important;font-weight:800;font-size:18px;box-shadow:0 8px 18px rgba(37,211,102,.23)}
+.whatsapp-image-button:not(:disabled):hover{background:linear-gradient(115deg,#25D366 0%,#1EBE5A 100%)!important;filter:brightness(1.03)}
 .whatsapp-image-button:disabled{opacity:.52;cursor:not-allowed;box-shadow:none}
 @media(max-width:650px){.whatsapp-image-button{min-height:62px;font-size:17px}}
+.download-image-button{justify-self:center;width:auto;min-width:170px;min-height:39px!important;padding:8px 16px!important;font-size:13px!important;border:1px solid #cbdfe8!important;background:#fff!important;color:#2a566d!important;box-shadow:none!important}
+.download-image-button:hover:not(:disabled){background:#f1f7fa!important}
+
 </style>
 </head>
 <body>
@@ -41,7 +44,7 @@
 <div class="verify-grid" aria-label="OT list verification counts"><div class="verify-stat"><b id="verifyTotal">0</b><span>Total cases</span></div><div class="verify-stat"><b id="verifyReady">0</b><span>Complete details</span></div><div class="verify-stat warning"><b id="verifyPending">0</b><span>Details pending</span></div></div>
 <div id="pendingReview" class="pending-review" hidden><strong>Cases to review</strong><ul id="pendingCaseList"></ul><button type="button" class="btn light sm" id="reviewPending">Review pending in schedule</button></div>
 <div id="sharePreview" class="preview"></div>
-<p class="statusnote" id="shareFreshness">The latest cloud records will be checked before sharing.</p><div class="share-actions"><button id="imageShareBtn" class="btn whatsapp-image-button" type="button" aria-label="Share OT list image using Android share menu">↗ Share Image to WhatsApp</button></div><p class="security">Lists are generated from current cloud records at the moment of sharing. Previous WhatsApp messages do not update after changes. This publicly editable test app must not contain real patient details.</p></div></section>
+<p class="statusnote" id="shareFreshness">The latest cloud records will be checked before sharing.</p><div class="share-actions"><button id="imageShareBtn" class="btn whatsapp-image-button" type="button" aria-label="Share OT list image using Android share menu">↗ Share Image to WhatsApp</button><button id="imageDownloadBtn" class="btn download-image-button" type="button" aria-label="Download OT list as PNG image">↓ Download OT List</button></div><p class="security">Lists are generated from current cloud records at the moment of sharing. Previous WhatsApp messages do not update after changes. This publicly editable test app must not contain real patient details.</p></div></section>
 </main><footer class="footer">OT Planner · Shared Cloudflare D1 database · Times use India Standard Time (IST)</footer></div>
 <nav class="mobile-nav" aria-label="Mobile navigation"><button data-tab="home" class="active"><span>⌂</span>Home</button><button data-tab="add"><span>＋</span>Post</button><button data-tab="schedule"><span>▦</span>Schedule</button><button data-tab="share"><span>↗</span>Share</button></nav><div id="toasts" class="toasts" aria-live="polite"></div>
 <dialog id="deleteDialog"><h3>Delete surgery?</h3><p id="deleteDescription"></p><div class="row"><button class="btn light" id="cancelDelete">Keep surgery</button><button class="btn danger" id="confirmDelete">Delete surgery</button></div></dialog>
@@ -130,6 +133,7 @@ function share(){
  $('pendingCaseList').innerHTML=pending.map((r,i)=>`<li>${escape(r.surgery)} (${escape(r.surgeon)}): ${[!r.time?'time':null,!r.patient?'patient':null,!r.mr?'MR number':null].filter(Boolean).join(', ')} pending</li>`).join('');
  const n=$('shareNotice');n.className='notice '+(pending.length?'':'success');n.textContent=pending.length?`${pending.length} case(s) have incomplete details. Review them before sharing.`:'All cases have their time, patient name and MR number. Check the preview before sharing.';
  $('imageShareBtn').disabled=!cloudOnline;
+ $('imageDownloadBtn').disabled=!cloudOnline;
  $('shareFreshness').textContent=!cloudOnline?'Cloud unavailable. Refresh successfully before sharing.':'The app will check fresh cloud data before sharing the image.';
 }
 // WhatsApp-ready PNG case cards with crisp body text, right-aligned hospital logo.
@@ -238,6 +242,7 @@ async function shareAfterCheck(action){
  if(!cloudOnline){toast('Cloud unavailable. Refresh before sharing.');return}
  const before=messageFor(shareMode);
  $('imageShareBtn').disabled=true;
+ $('imageDownloadBtn').disabled=true;
  const fresh=await load(false);
  if(!fresh){share();toast('Could not verify the latest cloud schedule. Please reconnect.');return}
  if(messageFor(shareMode)!==before){share();toast('OT list changed in the cloud. Please review the updated list and share again.');return}
@@ -251,7 +256,7 @@ async function shareAfterCheck(action){
 function render(){suggestions();home();schedule();share()}
 function show(tab){const previousTab=document.querySelector('.page.active')?.id;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===tab));document.querySelectorAll('.nav button,.mobile-nav button').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);if(x.dataset.tab===tab)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});if(tab==='add'&&!editId){const chosenDate=previousTab==='schedule'?$('filterDate').value:getNow().date;resetForm(chosenDate)}if(tab==='share')share();window.scrollTo({top:0,behavior:'instant'})}
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-tab],[data-edit],[data-delete]');if(!b)return;if(b.dataset.edit){const r=records.find(x=>x.id===b.dataset.edit);if(r)fillForm(r)}else if(b.dataset.delete)requestDelete(b.dataset.delete);else if(b.dataset.tab)show(b.dataset.tab)});
-$('refreshCloud').addEventListener('click',async()=>{const ok=await load();toast(ok?'Latest cloud schedule loaded.':'Unable to refresh cloud schedule.')});$('surgeryForm').addEventListener('submit',onSave);$('resetBtn').addEventListener('click',resetForm);for(const id of ['date','time','surgery','mr','surgeon'])$(id).addEventListener('input',duplicateCheck);$('filterDate').addEventListener('input',schedule);$('filterDept').addEventListener('change',schedule);$('filterSearch').addEventListener('input',schedule);$('todayTab').addEventListener('click',()=>{shareMode='today';share()});$('tomorrowTab').addEventListener('click',()=>{shareMode='tomorrow';share()});$('imageShareBtn').addEventListener('click',()=>shareAfterCheck('imageShare'));
+$('refreshCloud').addEventListener('click',async()=>{const ok=await load();toast(ok?'Latest cloud schedule loaded.':'Unable to refresh cloud schedule.')});$('surgeryForm').addEventListener('submit',onSave);$('resetBtn').addEventListener('click',resetForm);for(const id of ['date','time','surgery','mr','surgeon'])$(id).addEventListener('input',duplicateCheck);$('filterDate').addEventListener('input',schedule);$('filterDept').addEventListener('change',schedule);$('filterSearch').addEventListener('input',schedule);$('todayTab').addEventListener('click',()=>{shareMode='today';share()});$('tomorrowTab').addEventListener('click',()=>{shareMode='tomorrow';share()});$('imageShareBtn').addEventListener('click',()=>shareAfterCheck('imageShare'));$('imageDownloadBtn').addEventListener('click',()=>shareAfterCheck('imageDownload'));
 $('reviewPending').addEventListener('click',()=>{setScheduleDate(shareState().target);statusFilter='pending';show('schedule')});
 $('prevDate').addEventListener('click',()=>setScheduleDate(addDays($('filterDate').value||getNow().date,-1)));
 $('nextDate').addEventListener('click',()=>setScheduleDate(addDays($('filterDate').value||getNow().date,1)));

@@ -29,3 +29,8 @@ The app has no staff login and remains publicly editable. Use fictional test pat
 - When using **Post New Case** from the Schedule screen, the form starts with the date selected in the Schedule calendar; the date remains editable. Save & Post Another Case retains the saved date.
 - The sharing screen now presents only one large **green Share Image to WhatsApp** button. No Share Text, Copy Text, or Download PNG actions appear. Image sharing uses the native Android share sheet when supported; browsers without file sharing automatically download a PNG so it can be attached in WhatsApp.
 - Case-card image design, autocomplete, Cloudflare D1 API and schema remain unchanged.
+
+## Share image actions (latest update)
+- The primary **Share Image to WhatsApp** action now uses a WhatsApp-green gradient starting with `#25D366` and transitioning to `#1EBE5A`.
+- A smaller **Download OT List** PNG button appears directly underneath.
+- Both use the existing fresh-cloud check and the same card-style PNG image generator; plain-text sharing is not shown.
