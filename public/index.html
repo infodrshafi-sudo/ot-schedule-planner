@@ -167,9 +167,9 @@ async function renderOTCardImage(list,mode,date){
  const specs=cases.map(c=>{
   const patient=measure(c.patient,leftWidth,'33px Arial'),surgery=measure(c.surgery,rightWidth,'bold 37px Arial'),
   department=measure(c.department,rightWidth,'32px Arial'),surgeon=measure(c.surgeon,rightWidth,'bold 35px Arial'),
-  ana=measure(c.ana,rightWidth-90,'bold 30px Arial');
+  ana=measure(c.ana,rightWidth,'bold 35px Arial');
   const lh= Math.max(265,68+56+38+patient.length*39+42+42);
-  const rh= 20+(25+surgery.length*43+15)+(24+department.length*39+15)+(25+surgeon.length*42+16)+(60+ana.length*36);
+  const rh= 20+(25+surgery.length*43+15)+(24+department.length*39+15)+(25+surgeon.length*42+16)+(25+ana.length*42+16);
   return {patient,surgery,department,surgeon,ana,h:Math.ceil(Math.max(lh,rh)+105)};
  });
  const top=224,gap=22,footerH=125;
@@ -200,7 +200,7 @@ async function renderOTCardImage(list,mode,date){
    ly=lineText(sp.patient,leftX,ly,39,'33px Arial',dark)+10;
    icon('▦',154,ly);label('Age:',leftX,ly);ctx.font='32px Arial';ctx.fillStyle=dark;ctx.fillText(c.age,leftX+93,ly);
    ly+=53;icon('⚥',154,ly);label('Sex:',leftX,ly);ctx.font='32px Arial';ctx.fillStyle=dark;ctx.fillText(c.sex,leftX+92,ly);
-   // Right: surgery, department, surgeon, anesthetist highlighted BELOW surgeon.
+   // Right: surgery, department, surgeon and anesthetist as matching unboxed text rows.
    let ry=y+48;
    label('Surgery:',rightX,ry);ry+=42;
    ry=lineText(sp.surgery,rightX,ry,43,'bold 37px Arial','#111b26')+4;
@@ -208,10 +208,8 @@ async function renderOTCardImage(list,mode,date){
    ry=lineText(sp.department,rightX,ry,39,'32px Arial',dark)+3;
    label('Surgeon:',rightX,ry+10);ry+=51;
    ry=lineText(sp.surgeon,rightX,ry,42,'bold 35px Arial','#111b26')+4;
-   const ay=ry+4,ah=63+sp.ana.length*36;
-   rr(rightX-10,ay,cardW-(rightX-cardX)-17,ah,13);ctx.fillStyle='#e5f3ff';ctx.fill();ctx.strokeStyle='#77a9d0';ctx.lineWidth=1.7;ctx.stroke();
-   label('Anesthetist:',rightX+10,ay+33);
-   lineText(sp.ana,rightX+10,ay+69,36,'bold 30px Arial',dark);
+   label('Anesthetist:',rightX,ry+10);ry+=51;
+   ry=lineText(sp.ana,rightX,ry,42,'bold 35px Arial','#111b26')+4;
    y+=h+gap;
  }
  rr(margin,y+14,315,73,17);ctx.fillStyle='#116193';ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 35px Arial';ctx.fillText('Total Cases: '+cases.length,margin+22,y+61);

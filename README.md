@@ -15,7 +15,7 @@ Upload **OT_Planner_Update.zip** unchanged to the repository root, using the exi
 
 ## Image sharing
 - Image sharing now creates a **single vertical PNG** with a Rivershore logo, OT date, and **one separate rounded card per surgery**.
-- Each card shows Time, Patient Name, Age, Sex (left); Surgery, Department, Surgeon, and **Anesthetist highlighted below surgeon** (right).
+- Each card shows Time, Patient Name, Age, Sex (left); Surgery, Department, Surgeon, and **Anesthetist shown like Surgeon (no separate box)** (right).
 - Surgery and surgeon names are bold; long names wrap within their cards; number badge is narrow.
 - Existing WhatsApp plain-text sharing is unchanged.
 - Age/Sex are optional on the existing single surgery scheduling form; blank fields show an em dash in the image.
