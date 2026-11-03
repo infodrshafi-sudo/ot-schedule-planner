@@ -38,3 +38,11 @@ The app has no staff login and remains publicly editable. Use fictional test pat
 
 ## Review and share screen update
 The Share screen now shows the same surgery cards and Edit/Delete controls as the Schedule page, with Today, Tomorrow and any-date selection. Changes saved while editing from the Share screen return to Share for review. The WhatsApp PNG and Download OT List buttons remain below the case list. No D1 migration is required for this change.
+
+
+## Review & Share compact-screen update
+- Removed Post New Case button from the Share tab only; the Schedule tab's Post New Case button is retained and continues using the selected schedule date.
+- Removed repeated pending-case review section and extra warning text. Existing total/complete/pending counters remain.
+- Edit and Delete controls on Share's surgery cards remain available, as do Share Image and Download OT List.
+- An empty Share list shows a plain message without a Post New Case button.
+- No database migration required.
