@@ -34,3 +34,7 @@ The app has no staff login and remains publicly editable. Use fictional test pat
 - The primary **Share Image to WhatsApp** action now uses a WhatsApp-green gradient starting with `#25D366` and transitioning to `#1EBE5A`.
 - A smaller **Download OT List** PNG button appears directly underneath.
 - Both use the existing fresh-cloud check and the same card-style PNG image generator; plain-text sharing is not shown.
+
+
+## Review and share screen update
+The Share screen now shows the same surgery cards and Edit/Delete controls as the Schedule page, with Today, Tomorrow and any-date selection. Changes saved while editing from the Share screen return to Share for review. The WhatsApp PNG and Download OT List buttons remain below the case list. No D1 migration is required for this change.
