@@ -43,6 +43,17 @@
 .download-image-button{justify-self:center;width:auto;min-width:170px;min-height:39px!important;padding:8px 16px!important;font-size:13px!important;border:1px solid #cbdfe8!important;background:#fff!important;color:#2a566d!important;box-shadow:none!important}
 .download-image-button:hover:not(:disabled){background:#f1f7fa!important}
 
+
+/* Schedule: two rows of seven days, starting today. Six-level case-count heat map. */
+#schedule .weekstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 18px}
+#schedule .weekstrip button{min-width:0;min-height:78px;padding:7px 2px;border:1px solid #cbd5df;border-radius:10px;background:var(--case-heat,#fff);color:#263747;font-size:11px;line-height:1.2;transition:box-shadow .12s,border-color .12s}
+#schedule .weekstrip button b{font-size:19px;margin:4px 0;font-weight:800;color:#253542}
+#schedule .weekstrip button small{font-size:10px;font-weight:650;color:#394b56}
+#schedule .weekstrip button.selected{border:3px solid #0c5277;box-shadow:0 0 0 1px #fff inset;padding:5px 0;background:var(--case-heat,#fff);color:#263747}
+#schedule .weekstrip button:focus-visible{outline:3px solid #0c5277;outline-offset:2px}
+#schedule .schedule-date-picker{margin:0 0 19px;max-width:360px}
+#schedule .schedule-date-picker label{font-size:14px}
+@media(max-width:650px){#schedule .weekstrip{gap:4px}#schedule .weekstrip button{min-height:72px;font-size:10px;padding:6px 1px}#schedule .weekstrip button b{font-size:17px}#schedule .weekstrip button small{font-size:9px}#schedule .weekstrip button.selected{padding:4px 0}}
 </style>
 </head>
 <body>
@@ -58,7 +69,7 @@
 <div class="field"><label for="ana">Anesthetist <span class="required">*</span></label><input id="ana" maxlength="100" placeholder="Start typing anesthetist name" required autocomplete="off" aria-autocomplete="list"><div class="autocomplete-list" id="anaAutoList" role="listbox" aria-label="Anesthetist suggestions" hidden></div><datalist id="anaSuggestions"></datalist></div>
 <div class="optional-group full"><div class="optional-heading">Optional details <small>Can be added later</small></div><div class="grid"><div class="field"><label for="time">Surgery time</label><input id="time" type="time"></div><div class="field"><label for="patient">Patient name</label><input id="patient" maxlength="100" placeholder="Optional"></div><div class="field"><label for="age">Age (years)</label><input id="age" type="number" inputmode="numeric" min="0" max="120" placeholder="Optional"></div><div class="field"><label for="sex">Sex</label><select id="sex"><option value="">Not specified</option><option value="F">Female</option><option value="M">Male</option><option value="Other">Other</option></select></div><div class="field"><label for="mr">MR number</label><input id="mr" maxlength="60" placeholder="Optional"></div></div></div>
 </div><div class="notice">Required for initial scheduling: date, surgery, department, surgeon and anesthetist. Other details may be added later. Saved names become suggestions for future entries on all devices.</div><div id="duplicateNotice" role="status"></div><div class="formactions form-save-actions"><button type="submit" class="btn" id="saveBtn">Save Surgery</button><button type="submit" class="btn light" id="saveAnotherBtn">Save &amp; Post Another Case</button><div class="form-secondary-actions"><button type="button" class="btn light" id="resetBtn">Clear</button><button type="button" class="btn light" data-tab="schedule">Back to Schedule</button></div></div></form></div></section>
-<section class="page" id="schedule"><div class="sectionhead"><div><h2>OT Schedule</h2><p>View, edit, reschedule or delete any case.</p></div><button class="btn" data-tab="add">＋ Post New Case</button></div><div class="panel"><div class="date-actions"><button id="prevDate" type="button" aria-label="Previous day">← Previous</button><button id="goToday" type="button">Today</button><button id="goTomorrow" type="button">Tomorrow</button><button id="nextDate" type="button" aria-label="Next day">Next →</button></div><div class="weekstrip" id="weekStrip" aria-label="Nearby surgery dates"></div><div class="searchrow"><div class="field"><label for="filterDate">Surgery date (clear to see all dates)</label><input type="date" id="filterDate"></div><div class="field"><label for="filterDept">Department</label><select id="filterDept"><option value="">All departments</option></select></div><div class="field"><label for="filterSearch">Search</label><input id="filterSearch" type="search" placeholder="Surgery, patient, MR, doctor..."></div></div><div class="filter-chips" aria-label="Case detail status"><button type="button" class="selected" data-filter-status="all">All cases</button><button type="button" data-filter-status="ready">Ready</button><button type="button" data-filter-status="pending">Details pending</button></div><div class="row"><h3 id="scheduleTitle">Scheduled surgeries</h3><span id="filterCount" class="tag"></span></div><div id="scheduleList"></div></div></section>
+<section class="page" id="schedule"><div class="sectionhead"><div><h2>OT Schedule</h2><p>Select a date to view scheduled surgeries.</p></div><button class="btn" data-tab="add">＋ Post New Case</button></div><div class="panel"><div class="weekstrip" id="weekStrip" aria-label="Next fourteen days and case counts"></div><div class="field schedule-date-picker"><label for="filterDate">Surgery date</label><input type="date" id="filterDate" required></div><div class="row"><h3 id="scheduleTitle">Scheduled surgeries</h3><span id="filterCount" class="tag"></span></div><div id="scheduleList"></div></div></section>
 <section class="page" id="share"><div class="sectionhead"><div><h2>Review &amp; Share OT List</h2><p>Check the scheduled cases, edit or delete any case, and then share the updated image.</p></div></div><div class="panel"><div class="sharetabs"><button id="todayTab" type="button">Today</button><button id="tomorrowTab" type="button">Tomorrow</button></div><div class="share-date-controls"><div class="field"><label for="shareDate">OT list date</label><input id="shareDate" type="date" aria-label="Date of OT list to review and share"></div></div><div class="row" style="margin-bottom:13px"><strong id="shareTitle"></strong><span id="shareCount" class="tag"></span></div>
 <div class="verify-grid" aria-label="OT list verification counts"><div class="verify-stat"><b id="verifyTotal">0</b><span>Total cases</span></div><div class="verify-stat"><b id="verifyReady">0</b><span>Complete details</span></div><div class="verify-stat warning"><b id="verifyPending">0</b><span>Details pending</span></div></div>
 
@@ -111,14 +122,30 @@ list.replaceChildren();for(const name of options){const button=document.createEl
 list.hidden=!options.length;input.setAttribute('aria-expanded',String(!!options.length));closeSuggestions(id)}
 function initAutocomplete(){for(const [id] of autoFields){const input=$(id),list=$(id+'AutoList');input.parentElement.classList.add('autocomplete-field');input.setAttribute('aria-controls',list.id);input.setAttribute('aria-expanded','false');input.addEventListener('focus',()=>paintAutocomplete(id));input.addEventListener('input',()=>{autocompleteChosen.delete(id);paintAutocomplete(id)});input.addEventListener('keydown',ev=>{if(ev.key==='Escape'){list.hidden=true;input.setAttribute('aria-expanded','false')}if(ev.key==='ArrowDown'&&!list.hidden){ev.preventDefault();list.querySelector('button')?.focus()}});list.addEventListener('keydown',ev=>{if(ev.key==='Escape'){list.hidden=true;input.focus()}if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ev.preventDefault();const opts=[...list.querySelectorAll('button')];const index=opts.indexOf(document.activeElement);(opts[index+(ev.key==='ArrowDown'?1:-1)]||input).focus()}})}}
 document.addEventListener('pointerdown',ev=>{if(!ev.target.closest('.autocomplete-field'))closeSuggestions()});document.addEventListener('focusin',ev=>{if(!ev.target.closest('.autocomplete-field'))closeSuggestions()});
-function suggestions(){for(const [id,field,base] of [['deptSuggestions','department',deptDefault],['surgeonSuggestions','surgeon',surgeonDefault],['anaSuggestions','ana',anaDefault],['surgerySuggestions','surgery',surgeryDefault]]){$(id).replaceChildren(...candidates(field,base).map(v=>{const o=document.createElement('option');o.value=v;return o}))}const selected=$('filterDept').value;const departments=uniqueNames(records.map(x=>x.department));$('filterDept').innerHTML='<option value="">All departments</option>'+departments.map(d=>`<option value="${escape(d)}">${escape(d)}</option>`).join('');$('filterDept').value=departments.includes(selected)?selected:'';const focused=document.activeElement?.id;if(autoFields.some(row=>row[0]===focused))paintAutocomplete(focused)}
+function suggestions(){for(const [id,field,base] of [['deptSuggestions','department',deptDefault],['surgeonSuggestions','surgeon',surgeonDefault],['anaSuggestions','ana',anaDefault],['surgerySuggestions','surgery',surgeryDefault]]){$(id).replaceChildren(...candidates(field,base).map(v=>{const o=document.createElement('option');o.value=v;return o}))}const focused=document.activeElement?.id;if(autoFields.some(row=>row[0]===focused))paintAutocomplete(focused)}
 function card(r,i){return `<article class="case"><div class="caseheader"><div><h4>${escape(r.surgery)}</h4><p>${escape(r.department)} · ${escape(r.patient||'Patient pending')} · MR: ${escape(r.mr||'Pending')}</p></div><span class="time">${escape(displayTime(r.time))}</span></div><div class="details"><span>Surgeon: <b>${escape(r.surgeon)}</b></span><span>Anesthetist: <b>${escape(r.ana)}</b></span></div><div class="actions"><span class="tag">Case ${i+1}</span>${isPending(r)?'<span class="tag pending">⚠ Details pending</span>':'<span class="tag ready">✓ Ready</span>'}<button class="btn light sm" data-edit="${escape(r.id)}">✎ Edit</button><button class="btn danger sm" data-delete="${escape(r.id)}">Delete</button></div></article>`}
 const noCases=(msg)=>`<div class="empty"><b>No surgeries found</b><p>${escape(msg)}</p><button class="btn" type="button" data-tab="add">＋ Post New Case</button></div>`;
 function home(){const now=getNow(),next=addDays(now.date,1),today=records.filter(r=>r.date===now.date),tomorrow=sorted(records.filter(r=>r.date===next));$('todayLabel').textContent=prettyDate(now.date);$('todayShort').textContent=displayDate(now.date);$('tomorrowShort').textContent=displayDate(next);$('todayCount').textContent=today.length;$('tomorrowCount').textContent=tomorrow.length;$('pendingCount').textContent=records.filter(r=>(r.date===now.date||r.date===next)&&isPending(r)).length;$('homeList').innerHTML=tomorrow.length?tomorrow.map(card).join(''):noCases('Post a case for tomorrow to see it here.')}
 function isPending(r){return !r.time||!r.patient||!r.mr}
 function setScheduleDate(iso){$('filterDate').value=iso;schedule()}
-function weekstrip(date){const center=date||getNow().date;const begin=addDays(center,-3);const today=getNow().date;const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];$('weekStrip').innerHTML=Array.from({length:7},(_,i)=>{const value=addDays(begin,i),d=new Date(value+'T12:00:00Z'),count=records.filter(r=>r.date===value).length;return `<button type="button" data-day="${value}" class="${value===date?'selected':''}" aria-pressed="${value===date}">${days[d.getUTCDay()]}<b>${d.getUTCDate()}</b><small>${value===today?'Today':count+' cases'}</small></button>`}).join('')}
-function schedule(){const date=$('filterDate').value,dept=$('filterDept').value,q=clean($('filterSearch').value).toLowerCase();const list=sorted(records.filter(r=>(!date||r.date===date)&&(!dept||r.department===dept)&&(statusFilter==='all'||(statusFilter==='pending'?isPending(r):!isPending(r)))&&(!q||[r.surgery,r.patient,r.mr,r.surgeon,r.ana,r.department].some(v=>v.toLowerCase().includes(q)))));weekstrip(date);document.querySelectorAll('[data-filter-status]').forEach(b=>{b.classList.toggle('selected',b.dataset.filterStatus===statusFilter);b.setAttribute('aria-pressed',String(b.dataset.filterStatus===statusFilter))});$('scheduleTitle').textContent=date?`OT Schedule — ${displayDate(date)}`:'All scheduled surgeries';$('filterCount').textContent=`${list.length} case${list.length===1?'':'s'}`;$('scheduleList').innerHTML=list.length?list.map(card).join(''):noCases('No matching cases for the selected filters.')}
+function weekstrip(selectedDate){
+ const today=getNow().date,days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ const counts=new Map();for(const r of records)counts.set(r.date,(counts.get(r.date)||0)+1);
+ // Case count is capped at 5 for color intensity; 5 or more uses the same red.
+ const colors=['#ffffff','#fff3e6','#ffe0bb','#ffc18d','#fa957a','#e35a5a'];
+ $('weekStrip').innerHTML=Array.from({length:14},(_,i)=>{
+   const value=addDays(today,i),d=new Date(value+'T12:00:00Z'),count=counts.get(value)||0;
+   return `<button type="button" data-day="${value}" style="--case-heat:${colors[Math.min(count,5)]}" class="${value===selectedDate?'selected':''}" aria-label="${i===0?'Today, ':''}${displayDate(value)}, ${count} ${count===1?'case':'cases'}" aria-pressed="${value===selectedDate}">${days[d.getUTCDay()]}<b>${d.getUTCDate()}</b><small>${count} ${count===1?'case':'cases'}</small></button>`;
+ }).join('');
+}
+function schedule(){
+ const date=$('filterDate').value||getNow().date;
+ const list=sorted(records.filter(r=>r.date===date));
+ weekstrip(date);
+ $('scheduleTitle').textContent=`OT Schedule — ${displayDate(date)}`;
+ $('filterCount').textContent=`${list.length} case${list.length===1?'':'s'}`;
+ $('scheduleList').innerHTML=list.length?list.map(card).join(''):noCases('No surgeries scheduled for this date.');
+}
 function fillForm(r){returnToShareAfterEdit=document.querySelector('.page.active')?.id==='share';autocompleteChosen.clear();editId=r.id;for(const id of ['date','time','surgery','department','patient','age','sex','mr','surgeon','ana'])$(id).value=r[id]||'';$('formTitle').textContent='Edit Surgery';$('saveBtn').textContent='Update Surgery';$('saveAnotherBtn').hidden=true;duplicateCheck();show('add');window.scrollTo({top:0,behavior:'smooth'})}
 function resetForm(defaultDate){autocompleteChosen.clear();editId=null;$('surgeryForm').reset();$('date').value=defaultDate||getNow().date;$('formTitle').textContent='Post New Case';$('saveBtn').textContent='Save Surgery';$('saveAnotherBtn').hidden=false;$('duplicateNotice').innerHTML=''}
 function duplicateCheck(){const p=collect(false);const duplicates=records.filter(r=>r.id!==editId&&r.date===p.date&&((p.mr&&(r.mr||'').toLowerCase()===p.mr.toLowerCase())||(p.time&&r.time===p.time&&r.surgery.toLowerCase()===p.surgery.toLowerCase()&&r.surgeon.toLowerCase()===p.surgeon.toLowerCase())));$('duplicateNotice').innerHTML=duplicates.length?'<div class="notice"><strong>Possible duplicate:</strong> Another case has the same MR number on this date, or the same surgery, time and surgeon. Please check before saving.</div>':''}
@@ -244,16 +271,27 @@ async function renderOTCardImage(list,mode,date){
 }
 function canvasToPng(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Could not create PNG image.')),'image/png'))}
 function downloadPng(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),6000)}
+function shareCaption(target){
+ const today=getNow().date;
+ const label=target===today?'Today':target===addDays(today,1)?'Tomorrow':null;
+ return label?`OT List for ${label} (${displayDate(target)})`:`OT List for ${displayDate(target)}`;
+}
+async function copyShareCaption(caption){
+ try{await navigator.clipboard.writeText(caption);return true}catch(e){return false}
+}
 async function outputTableImage(action){
  const {target}=shareState();const list=sorted(records.filter(r=>r.date===target));
  const blob=await canvasToPng(await renderOTCardImage(list,shareMode,target));
- const filename='OT_List_'+target+'.png';
+ const filename='OT_List_'+target+'.png',caption=shareCaption(target);
  if(action==='imageDownload'){downloadPng(blob,filename);toast('OT list PNG downloaded.');return}
  const file=new File([blob],filename,{type:'image/png'});
  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-   try{await navigator.share({files:[file],title:'OT List ('+displayDate(target)+')'});return}catch(e){if(e.name==='AbortError')return}
+   try{await navigator.share({files:[file],title:caption,text:caption});return}
+   catch(e){if(e.name==='AbortError')return}
  }
- downloadPng(blob,filename);toast('Image downloaded. Open WhatsApp and attach the PNG from Downloads.');
+ downloadPng(blob,filename);
+ const copied=await copyShareCaption(caption);
+ toast(copied?'Image downloaded and caption copied. Attach the image in WhatsApp and paste the caption.':'Image downloaded. Attach it in WhatsApp and add: '+caption);
 }
 async function shareAfterCheck(action){
  if(!cloudOnline){toast('Cloud unavailable. Refresh before sharing.');return}
@@ -273,13 +311,9 @@ async function shareAfterCheck(action){
 function render(){suggestions();home();schedule();share()}
 function show(tab){const previousTab=document.querySelector('.page.active')?.id;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===tab));document.querySelectorAll('.nav button,.mobile-nav button').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);if(x.dataset.tab===tab)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});if(tab==='add'&&!editId){const chosenDate=previousTab==='schedule'?$('filterDate').value:previousTab==='share'?shareState().target:getNow().date;returnToShareAfterEdit=previousTab==='share';resetForm(chosenDate)}if(tab==='share')share();window.scrollTo({top:0,behavior:'instant'})}
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-tab],[data-edit],[data-delete]');if(!b)return;if(b.dataset.edit){const r=records.find(x=>x.id===b.dataset.edit);if(r)fillForm(r)}else if(b.dataset.delete)requestDelete(b.dataset.delete);else if(b.dataset.tab)show(b.dataset.tab)});
-$('refreshCloud').addEventListener('click',async()=>{const ok=await load();toast(ok?'Latest cloud schedule loaded.':'Unable to refresh cloud schedule.')});$('surgeryForm').addEventListener('submit',onSave);$('resetBtn').addEventListener('click',resetForm);for(const id of ['date','time','surgery','mr','surgeon'])$(id).addEventListener('input',duplicateCheck);$('filterDate').addEventListener('input',schedule);$('filterDept').addEventListener('change',schedule);$('filterSearch').addEventListener('input',schedule);$('todayTab').addEventListener('click',()=>{shareMode='today';share()});$('tomorrowTab').addEventListener('click',()=>{shareMode='tomorrow';share()});$('shareDate').addEventListener('change',()=>{if(!$('shareDate').value)return;shareCustomDate=$('shareDate').value;shareMode='custom';share()});$('imageShareBtn').addEventListener('click',()=>shareAfterCheck('imageShare'));$('imageDownloadBtn').addEventListener('click',()=>shareAfterCheck('imageDownload'));
+$('refreshCloud').addEventListener('click',async()=>{const ok=await load();toast(ok?'Latest cloud schedule loaded.':'Unable to refresh cloud schedule.')});$('surgeryForm').addEventListener('submit',onSave);$('resetBtn').addEventListener('click',resetForm);for(const id of ['date','time','surgery','mr','surgeon'])$(id).addEventListener('input',duplicateCheck);$('filterDate').addEventListener('input',schedule);$('todayTab').addEventListener('click',()=>{shareMode='today';share()});$('tomorrowTab').addEventListener('click',()=>{shareMode='tomorrow';share()});$('shareDate').addEventListener('change',()=>{if(!$('shareDate').value)return;shareCustomDate=$('shareDate').value;shareMode='custom';share()});$('imageShareBtn').addEventListener('click',()=>shareAfterCheck('imageShare'));$('imageDownloadBtn').addEventListener('click',()=>shareAfterCheck('imageDownload'));
 
-$('prevDate').addEventListener('click',()=>setScheduleDate(addDays($('filterDate').value||getNow().date,-1)));
-$('nextDate').addEventListener('click',()=>setScheduleDate(addDays($('filterDate').value||getNow().date,1)));
-$('goToday').addEventListener('click',()=>setScheduleDate(getNow().date));$('goTomorrow').addEventListener('click',()=>setScheduleDate(addDays(getNow().date,1)));
 $('weekStrip').addEventListener('click',ev=>{const b=ev.target.closest('[data-day]');if(b)setScheduleDate(b.dataset.day)});
-document.querySelectorAll('[data-filter-status]').forEach(b=>b.addEventListener('click',()=>{statusFilter=b.dataset.filterStatus;schedule()}));
 $('confirmDelete').addEventListener('click',confirmDelete);$('cancelDelete').addEventListener('click',()=>{$('deleteDialog').close();deleteId=null});
 initAutocomplete();$('filterDate').value=getNow().date;resetForm();render();
 load();setInterval(()=>{if(!document.hidden&&!editId&&!$('deleteDialog').open)load(false);else {home();share()}},30000);
