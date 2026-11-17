@@ -47,9 +47,13 @@
 /* Schedule: two rows of seven days, starting today. Six-level case-count heat map. */
 #schedule .weekstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 18px}
 #schedule .weekstrip button{min-width:0;min-height:78px;padding:7px 2px;border:1px solid #cbd5df;border-radius:10px;background:var(--case-heat,#fff);color:#263747;font-size:11px;line-height:1.2;transition:box-shadow .12s,border-color .12s}
+#schedule .weekstrip button.is-sunday{border-color:#d84848}
+#schedule .weekstrip button.is-friday{border-color:#2ea44f}
 #schedule .weekstrip button b{font-size:19px;margin:4px 0;font-weight:800;color:#253542}
 #schedule .weekstrip button small{font-size:10px;font-weight:650;color:#394b56}
 #schedule .weekstrip button.selected{border:3px solid #0c5277;box-shadow:0 0 0 1px #fff inset;padding:5px 0;background:var(--case-heat,#fff);color:#263747}
+#schedule .weekstrip button.selected.is-sunday{border-color:#d84848}
+#schedule .weekstrip button.selected.is-friday{border-color:#2ea44f}
 #schedule .weekstrip button:focus-visible{outline:3px solid #0c5277;outline-offset:2px}
 #schedule .schedule-date-picker{margin:0 0 19px;max-width:360px}
 #schedule .schedule-date-picker label{font-size:14px}
@@ -151,8 +155,9 @@ function weekstrip(selectedDate){
  // Case count is capped at 5 for color intensity; 5 or more uses the same red.
  const colors=['#ffffff','#fff3e6','#ffe0bb','#ffc18d','#fa957a','#e35a5a'];
  $('weekStrip').innerHTML=Array.from({length:14},(_,i)=>{
-   const value=addDays(today,i),d=new Date(value+'T12:00:00Z'),count=counts.get(value)||0;
-   return `<button type="button" data-day="${value}" style="--case-heat:${colors[Math.min(count,5)]}" class="${value===selectedDate?'selected':''}" aria-label="${i===0?'Today, ':''}${displayDate(value)}, ${count} ${count===1?'case':'cases'}" aria-pressed="${value===selectedDate}">${days[d.getUTCDay()]}<b>${d.getUTCDate()}</b><small>${count} ${count===1?'case':'cases'}</small></button>`;
+   const value=addDays(today,i),d=new Date(value+'T12:00:00Z'),count=counts.get(value)||0,dayIndex=d.getUTCDay();
+   const classes=[value===selectedDate?'selected':'',dayIndex===0?'is-sunday':'',dayIndex===5?'is-friday':''].filter(Boolean).join(' ');
+   return `<button type="button" data-day="${value}" style="--case-heat:${colors[Math.min(count,5)]}" class="${classes}" aria-label="${i===0?'Today, ':''}${displayDate(value)}, ${count} ${count===1?'case':'cases'}" aria-pressed="${value===selectedDate}">${days[dayIndex]}<b>${d.getUTCDate()}</b><small>${count} ${count===1?'case':'cases'}</small></button>`;
  }).join('');
 }
 function schedule(){
