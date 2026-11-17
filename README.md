@@ -55,3 +55,11 @@ The Share screen now shows the same surgery cards and Edit/Delete controls as th
 - Time is displayed in a bold blue rounded badge centred directly above the vertical divider.
 - Patient Name, Age/Sex, and Surgery appear in the first column; Department, Surgeon, and Anesthetist remain in the second column.
 - No database migration is required for this layout update.
+
+
+## Rivershore OT image design refresh
+- The exported OT-list PNG now uses a refined navy, medical-blue, teal and white visual system, with improved typography, card spacing, a subtle mint number rail and a cleaner total-cases footer.
+- Patient Name, Age/Sex and Surgery labels (and Department, Surgeon and Anesthetist labels) are plain navy-blue text with no coloured highlight or label background.
+- The time badge sits above the centre divider, shifted slightly to the right.
+- The two-column case layout, original hospital logo, patient data, date selection, PNG download and WhatsApp sharing behaviour are retained.
+- No database migration is required.

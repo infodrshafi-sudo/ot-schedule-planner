@@ -231,7 +231,7 @@ async function renderOTCardImage(list,mode,date){
  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
  if(!ctx)throw new Error('Image generation is not supported in this browser.');
  const W=1190,margin=42,cardX=35,cardW=W-70,logo=await loadOTImageLogo();
- const navy='#103c68',blue='#17608b',dark='#152e43',muted='#375d74',stroke='#b5d1e4';
+ const navy='#123f80',blue='#0879a9',teal='#16b98b',dark='#151b22',stroke='#9bcce5';
  const cases=list.map((r,i)=>({
   no:i+1,time:displayTime(r.time),patient:imageDisplayText(r.patient),
   age:r.age?String(r.age):'—',sex:imageDisplayText(r.sex||'—'),
@@ -239,86 +239,113 @@ async function renderOTCardImage(list,mode,date){
   surgery:imageDisplayText(r.surgery),department:imageDisplayText(r.department),
   surgeon:imageDisplayText(r.surgeon),ana:imageDisplayText(r.ana)
  }));
- // Two-column card: patient details and surgery on the left; clinical team on the right.
- const leftX=215,rightX=660,divider=606,leftWidth=divider-leftX-28,rightWidth=435;
+ // Two-column clinical card: patient details on the left, care team on the right.
+ // All field labels are plain navy text. They intentionally have NO filled highlight.
+ const leftX=218,rightX=676,divider=620,leftWidth=divider-leftX-30,rightWidth=430;
  const measure=(text,width,font)=>{ctx.font=font;return wrapImageText(ctx,text,width)};
  const specs=cases.map(c=>{
-  const patient=measure(c.patient,leftWidth,'bold 33px Arial');
-  const surgery=measure(c.surgery,leftWidth,'bold 37px Arial');
+  const patient=measure(c.patient,leftWidth,'bold 34px Arial');
+  const surgery=measure(c.surgery,leftWidth,'bold 35px Arial');
   const department=measure(c.department,rightWidth,'32px Arial');
-  const surgeon=measure(c.surgeon,rightWidth,'bold 35px Arial');
-  const ana=measure(c.ana,rightWidth,'bold 35px Arial');
+  const surgeon=measure(c.surgeon,rightWidth,'bold 34px Arial');
+  const ana=measure(c.ana,rightWidth,'bold 34px Arial');
 
-  // Left column begins below the time badge.
-  let ly=110;
-  ly+=38+patient.length*39+12; // patient label + wrapped name
+  let ly=105;
+  ly+=39+patient.length*38+14; // Patient label + name
   ly+=38+38+14;                // Age/Sex label + value
-  ly+=42+surgery.length*43+28; // Surgery label + wrapped surgery name
-  const leftBottom=ly;
-
-  // Right column also starts below the time badge.
-  let ry=110;
-  ry+=40+department.length*39+22;
-  ry+=40+surgeon.length*42+22;
-  ry+=40+ana.length*42+28;
-  const rightBottom=ry;
-  return {patient,surgery,department,surgeon,ana,h:Math.max(360,Math.ceil(Math.max(leftBottom,rightBottom)))};
+  ly+=39+surgery.length*42+25;// Surgery label + wrapped procedure
+  let ry=105;
+  ry+=39+department.length*37+18;
+  ry+=39+surgeon.length*40+18;
+  ry+=39+ana.length*40+24;
+  return {patient,surgery,department,surgeon,ana,h:Math.max(410,Math.ceil(Math.max(ly,ry)))};
  });
- const top=224,gap=22,footerH=125;
+ const top=220,gap=22,footerH=128;
  const totalH=top+specs.reduce((sum,v)=>sum+v.h+gap,0)+footerH;
  const scale=2;canvas.width=W*scale;canvas.height=Math.ceil(totalH*scale);ctx.scale(scale,scale);
  const rr=(x,y,w,h,r=18)=>{const a=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+a,y);ctx.lineTo(x+w-a,y);ctx.quadraticCurveTo(x+w,y,x+w,y+a);ctx.lineTo(x+w,y+h-a);ctx.quadraticCurveTo(x+w,y+h,x+w-a,y+h);ctx.lineTo(x+a,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-a);ctx.lineTo(x,y+a);ctx.quadraticCurveTo(x,y,x+a,y);ctx.closePath()};
  const lineText=(lines,x,y,lineH,font,color)=>{ctx.font=font;ctx.fillStyle=color;for(let i=0;i<lines.length;i++)ctx.fillText(lines[i],x,y+i*lineH);return y+lines.length*lineH};
  const label=(name,x,y)=>{ctx.font='bold 27px Arial';ctx.fillStyle=navy;ctx.fillText(name,x,y)};
- const icon=(char,x,y)=>{ctx.font='31px Arial';ctx.fillStyle=blue;ctx.fillText(char,x,y)};
+ const strokeIcon=(x,y)=>{ctx.strokeStyle=navy;ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round'};
+ const icon=(kind,x,baseline)=>{
+  const cy=baseline-11;ctx.save();strokeIcon(x,cy);
+  if(kind==='patient'){
+   ctx.beginPath();ctx.arc(x+18,cy-17,7,0,Math.PI*2);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x+5,cy+10);ctx.lineTo(x+7,cy+1);ctx.quadraticCurveTo(x+9,cy-7,x+18,cy-7);ctx.quadraticCurveTo(x+27,cy-7,x+29,cy+1);ctx.lineTo(x+31,cy+10);ctx.closePath();ctx.stroke();
+  }else if(kind==='calendar'){
+   rr(x+4,cy-27,28,29,4);ctx.stroke();ctx.beginPath();ctx.moveTo(x+4,cy-18);ctx.lineTo(x+32,cy-18);ctx.moveTo(x+11,cy-31);ctx.lineTo(x+11,cy-23);ctx.moveTo(x+25,cy-31);ctx.lineTo(x+25,cy-23);ctx.stroke();
+   for(let r=0;r<2;r++)for(let c=0;c<3;c++){ctx.beginPath();ctx.arc(x+11+c*7,cy-12+r*7,1.2,0,Math.PI*2);ctx.stroke()}
+  }else if(kind==='surgery'){
+   ctx.beginPath();ctx.moveTo(x+5,cy+7);ctx.lineTo(x+25,cy-15);ctx.lineTo(x+32,cy-23);ctx.lineTo(x+34,cy-20);ctx.lineTo(x+27,cy-12);ctx.lineTo(x+8,cy+10);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x+5,cy+7);ctx.lineTo(x+2,cy+13);ctx.lineTo(x+9,cy+10);ctx.stroke();
+  }else if(kind==='department'){
+   rr(x+5,cy-28,27,37,3);ctx.stroke();ctx.beginPath();ctx.moveTo(x+18.5,cy-22);ctx.lineTo(x+18.5,cy-10);ctx.moveTo(x+13,cy-16);ctx.lineTo(x+24,cy-16);ctx.stroke();
+   for(let r=0;r<2;r++)for(let c=0;c<2;c++){ctx.strokeRect(x+9+c*14,cy-7+r*9,5,5)}
+   ctx.strokeRect(x+17,cy+1,7,8);
+  }else if(kind==='surgeon'){
+   ctx.beginPath();ctx.arc(x+18,cy-18,9,Math.PI,0);ctx.lineTo(x+27,cy-12);ctx.quadraticCurveTo(x+18,cy-7,x+9,cy-12);ctx.closePath();ctx.stroke();
+   ctx.beginPath();ctx.arc(x+18,cy-13,8,0,Math.PI*2);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x+6,cy+11);ctx.quadraticCurveTo(x+7,cy-1,x+18,cy-1);ctx.quadraticCurveTo(x+29,cy-1,x+30,cy+11);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x+14,cy-8);ctx.lineTo(x+18,cy-4);ctx.lineTo(x+22,cy-8);ctx.stroke();
+  }else if(kind==='ana'){
+   rr(x+6,cy-27,24,34,5);ctx.stroke();ctx.beginPath();ctx.moveTo(x+13,cy-19);ctx.lineTo(x+23,cy-19);ctx.moveTo(x+18,cy-24);ctx.lineTo(x+18,cy-14);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x+18,cy+7);ctx.lineTo(x+18,cy+13);ctx.quadraticCurveTo(x+18,cy+19,x+25,cy+19);ctx.lineTo(x+28,cy+16);ctx.stroke();ctx.beginPath();ctx.arc(x+28,cy+14,2,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();
+ };
  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,totalH);
- // Subtle hospital brand accents.
- ctx.fillStyle='#e0f7f2';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(220,0);ctx.quadraticCurveTo(100,55,0,80);ctx.closePath();ctx.fill();
- ctx.fillStyle='#36b68d';ctx.fillRect(margin,69,9,94);
- ctx.font='bold 43px Arial';ctx.fillStyle=navy;ctx.fillText(mode==='today'?'OT LIST FOR TODAY':'OT LIST FOR TOMORROW',margin+28,104);
- ctx.font='bold 34px Arial';ctx.fillText('('+displayDate(date)+')',margin+28,153);
- if(logo){const boxW=370,boxH=135,k=Math.min(boxW/logo.naturalWidth,boxH/logo.naturalHeight);const dw=k*logo.naturalWidth,dh=k*logo.naturalHeight;ctx.drawImage(logo,W-margin-dw,24,dw,dh)}
+ // Quiet mint corner accent and a restrained teal-to-blue header rule.
+ ctx.fillStyle='#e8f8f4';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(215,0);ctx.quadraticCurveTo(110,50,0,78);ctx.closePath();ctx.fill();
+ ctx.fillStyle=teal;ctx.fillRect(margin,59,9,94);
+ ctx.font='bold 43px Arial';ctx.fillStyle=navy;ctx.fillText(mode==='today'?'OT LIST FOR TODAY':'OT LIST FOR TOMORROW',margin+28,96);
+ ctx.font='bold 34px Arial';ctx.fillText('('+displayDate(date)+')',margin+28,145);
+ if(logo){const boxW=385,boxH=132,k=Math.min(boxW/logo.naturalWidth,boxH/logo.naturalHeight);const dw=k*logo.naturalWidth,dh=k*logo.naturalHeight;ctx.drawImage(logo,W-margin-dw,17,dw,dh)}
+ const rule=ctx.createLinearGradient(margin,0,W-margin,0);rule.addColorStop(0,'#55d3b4');rule.addColorStop(1,'#1769ad');ctx.fillStyle=rule;ctx.fillRect(margin,174,W-margin*2,4);
  let y=top;
  for(let i=0;i<cases.length;i++){
    const c=cases[i],sp=specs[i],h=sp.h;
-   // Rounded case card with a mint serial-number strip.
-   rr(cardX,y,cardW,h,24);ctx.fillStyle=i%2===0?'#fcfeff':'#f9fcfe';ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();
-   ctx.save();rr(cardX,y,cardW,h,24);ctx.clip();ctx.fillStyle='#e9f8f5';ctx.fillRect(cardX,y,92,h);ctx.restore();
-   rr(cardX+17,y+20,58,61,13);ctx.fillStyle='#14699a';ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 39px Arial';ctx.textAlign='center';ctx.fillText(String(c.no),cardX+46,y+65);ctx.textAlign='left';
+   // White clinical card, soft shadow, pale mint number rail.
+   ctx.save();ctx.shadowColor='rgba(21,83,119,.12)';ctx.shadowBlur=13;ctx.shadowOffsetY=5;
+   rr(cardX,y,cardW,h,25);const cardFill=ctx.createLinearGradient(cardX,y,cardX+cardW,y+h);cardFill.addColorStop(0,'#ffffff');cardFill.addColorStop(1,'#f8fcff');ctx.fillStyle=cardFill;ctx.fill();ctx.restore();
+   rr(cardX,y,cardW,h,25);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();
+   ctx.save();rr(cardX,y,cardW,h,25);ctx.clip();ctx.fillStyle='#e8f8f4';ctx.fillRect(cardX,y,88,h);
+   ctx.fillStyle='rgba(22,185,139,.10)';ctx.beginPath();ctx.moveTo(cardX+cardW-190,y+h);ctx.quadraticCurveTo(cardX+cardW-25,y+h-16,cardX+cardW,y+h-110);ctx.lineTo(cardX+cardW,y+h);ctx.closePath();ctx.fill();ctx.restore();
+   rr(cardX+16,y+18,60,62,14);const numberFill=ctx.createLinearGradient(cardX+16,y+18,cardX+76,y+80);numberFill.addColorStop(0,'#0879a9');numberFill.addColorStop(1,'#07578c');ctx.fillStyle=numberFill;ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 39px Arial';ctx.textAlign='center';ctx.fillText(String(c.no),cardX+46,y+63);ctx.textAlign='left';
 
-   // Time badge is centred exactly over the middle divider.
-   const badgeW=320,badgeH=62,badgeX=divider-badgeW/2,badgeY=y+13;
-   rr(badgeX,badgeY,badgeW,badgeH,17);
-   const gradient=ctx.createLinearGradient(badgeX,badgeY,badgeX+badgeW,badgeY);
-   gradient.addColorStop(0,'#103c68');gradient.addColorStop(1,'#17608b');
-   ctx.fillStyle=gradient;ctx.fill();
-   ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';
-   ctx.fillText('◷  Time: '+c.time,divider,badgeY+42);ctx.textAlign='left';
+   // Time badge sits just above the divider, nudged slightly to the right.
+   const badgeW=330,badgeH=62,badgeCenter=divider+26,badgeX=badgeCenter-badgeW/2,badgeY=y+12;
+   rr(badgeX-10,badgeY-2,badgeW+20,badgeH+4,18);ctx.fillStyle='#d9f5ed';ctx.fill();
+   rr(badgeX,badgeY,badgeW,badgeH,17);const gradient=ctx.createLinearGradient(badgeX,badgeY,badgeX+badgeW,badgeY);gradient.addColorStop(0,'#103f7d');gradient.addColorStop(1,'#0879a9');ctx.fillStyle=gradient;ctx.fill();
+   ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.fillText('◷  Time: '+c.time,badgeCenter,badgeY+42);ctx.textAlign='left';
 
-   // Divider begins below the time badge.
-   ctx.strokeStyle='#c0d7e5';ctx.lineWidth=2;ctx.beginPath();
-   ctx.moveTo(divider,y+88);ctx.lineTo(divider,y+h-23);ctx.stroke();
+   // Divider begins below the time badge, keeping both columns visually separate.
+   ctx.strokeStyle='#8bbbd9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(divider,y+91);ctx.lineTo(divider,y+h-24);ctx.stroke();
 
-   // Left column: patient name, combined age/sex, then surgery.
-   let ly=y+110;
-   icon('♙',154,ly);label('Patient Name:',leftX,ly);ly+=38;
-   ly=lineText(sp.patient,leftX,ly,39,'bold 33px Arial',dark)+12;
-   icon('▦',154,ly);label('Age/Sex:',leftX,ly);ly+=38;
-   ctx.font='bold 33px Arial';ctx.fillStyle=dark;ctx.fillText(c.ageSex,leftX,ly);ly+=52;
-   icon('✎',154,ly);label('Surgery:',leftX,ly);ly+=42;
-   lineText(sp.surgery,leftX,ly,43,'bold 37px Arial','#111b26');
+   // Left column: labels are plain navy text with no background/highlight.
+   let ly=y+105;
+   icon('patient',145,ly);label('Patient Name:',leftX,ly);ly+=39;
+   ly=lineText(sp.patient,leftX,ly,38,'bold 34px Arial',dark)+14;
+   icon('calendar',145,ly);label('Age/Sex:',leftX,ly);ly+=38;
+   ctx.font='bold 34px Arial';ctx.fillStyle=dark;ctx.fillText(c.ageSex,leftX,ly);ly+=52;
+   icon('surgery',145,ly);label('Surgery:',leftX,ly);ly+=39;
+   lineText(sp.surgery,leftX,ly,42,'bold 35px Arial',dark);
 
-   // Right column: department, surgeon and anesthetist.
-   let ry=y+110;
-   label('Department:',rightX,ry);ry+=40;
-   ry=lineText(sp.department,rightX,ry,39,'32px Arial',dark)+22;
-   label('Surgeon:',rightX,ry);ry+=40;
-   ry=lineText(sp.surgeon,rightX,ry,42,'bold 35px Arial','#111b26')+22;
-   label('Anesthetist:',rightX,ry);ry+=40;
-   lineText(sp.ana,rightX,ry,42,'bold 35px Arial','#111b26');
+   // Right column: matching plain navy labels and clear black values.
+   let ry=y+105;
+   icon('department',rightX-48,ry);label('Department:',rightX,ry);ry+=39;
+   ry=lineText(sp.department,rightX,ry,37,'32px Arial',dark)+18;
+   icon('surgeon',rightX-48,ry);label('Surgeon:',rightX,ry);ry+=39;
+   ry=lineText(sp.surgeon,rightX,ry,40,'bold 34px Arial',dark)+18;
+   icon('ana',rightX-48,ry);label('Anesthetist:',rightX,ry);ry+=39;
+   lineText(sp.ana,rightX,ry,40,'bold 34px Arial',dark);
    y+=h+gap;
  }
- rr(margin,y+14,315,73,17);ctx.fillStyle='#116193';ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 35px Arial';ctx.fillText('Total Cases: '+cases.length,margin+22,y+61);
+ // Compact summary aligned with the patient cards.
+ rr(margin,y+12,335,72,18);const totalGradient=ctx.createLinearGradient(margin,y+12,margin+335,y+84);totalGradient.addColorStop(0,'#0879a9');totalGradient.addColorStop(1,'#103f7d');ctx.fillStyle=totalGradient;ctx.fill();
+ ctx.fillStyle='#fff';ctx.font='bold 35px Arial';ctx.fillText('Total Cases: '+cases.length,margin+23,y+60);
+ // Teal and blue footer waves echo the Rivershore identity without competing with case data.
+ const footerY=totalH-42;ctx.fillStyle='#dff5f0';ctx.beginPath();ctx.moveTo(0,footerY-18);ctx.quadraticCurveTo(260,footerY+28,520,footerY-10);ctx.quadraticCurveTo(830,footerY-55,W,footerY-15);ctx.lineTo(W,totalH);ctx.lineTo(0,totalH);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#0879a9';ctx.beginPath();ctx.moveTo(0,footerY+10);ctx.quadraticCurveTo(290,totalH+8,610,footerY+4);ctx.quadraticCurveTo(930,footerY-48,W,footerY+4);ctx.lineTo(W,totalH);ctx.lineTo(0,totalH);ctx.closePath();ctx.fill();
  return canvas;
 }
 function canvasToPng(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Could not create PNG image.')),'image/png'))}
