@@ -254,7 +254,8 @@ async function renderOTCardImage(list,mode,date){
   ly+=39+patient.length*38+14; // Patient label + name
   ly+=38+38+14;                // Age/Sex label + value
   ly+=39+surgery.length*42+25;// Surgery label + wrapped procedure
-  let ry=105;
+  // The time badge occupies the upper centre/right area, so reserve extra top clearance for the care-team column.
+  let ry=130;
   ry+=39+department.length*37+18;
   ry+=39+surgeon.length*40+18;
   ry+=39+ana.length*40+24;
@@ -330,8 +331,8 @@ async function renderOTCardImage(list,mode,date){
    icon('surgery',145,ly);label('Surgery:',leftX,ly);ly+=39;
    lineText(sp.surgery,leftX,ly,42,'bold 35px Arial',dark);
 
-   // Right column: matching plain navy labels and clear black values.
-   let ry=y+105;
+   // Right column starts lower to keep the department icon and label clear of the time badge.
+   let ry=y+130;
    icon('department',rightX-48,ry);label('Department:',rightX,ry);ry+=39;
    ry=lineText(sp.department,rightX,ry,37,'32px Arial',dark)+18;
    icon('surgeon',rightX-48,ry);label('Surgeon:',rightX,ry);ry+=39;
