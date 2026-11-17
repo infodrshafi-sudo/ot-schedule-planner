@@ -219,7 +219,7 @@ async function renderOTCardImage(list,mode,date){
  const leftX=215,rightX=660,leftWidth=355,rightWidth=435;
  const measure=(text,width,font)=>{ctx.font=font;return wrapImageText(ctx,text,width)};
  const specs=cases.map(c=>{
-  const patient=measure(c.patient,leftWidth,'33px Arial'),surgery=measure(c.surgery,rightWidth,'bold 37px Arial'),
+  const patient=measure(c.patient,leftWidth,'bold 33px Arial'),surgery=measure(c.surgery,rightWidth,'bold 37px Arial'),
   department=measure(c.department,rightWidth,'32px Arial'),surgeon=measure(c.surgeon,rightWidth,'bold 35px Arial'),
   ana=measure(c.ana,rightWidth,'bold 35px Arial');
   const lh= Math.max(265,68+56+38+patient.length*39+42+42);
@@ -251,7 +251,7 @@ async function renderOTCardImage(list,mode,date){
    // Left: time, patient, age, sex. Keep text wide and readable.
    let ly=y+53;icon('◷',154,ly);label('Time:',leftX,ly);ctx.fillStyle=dark;ctx.font='32px Arial';ctx.fillText(c.time,leftX+105,ly);
    ly+=62;icon('♙',154,ly);label('Patient Name:',leftX,ly);ly+=43;
-   ly=lineText(sp.patient,leftX,ly,39,'33px Arial',dark)+10;
+   ly=lineText(sp.patient,leftX,ly,39,'bold 33px Arial',dark)+10;
    icon('▦',154,ly);label('Age:',leftX,ly);ctx.font='32px Arial';ctx.fillStyle=dark;ctx.fillText(c.age,leftX+93,ly);
    ly+=53;icon('⚥',154,ly);label('Sex:',leftX,ly);ctx.font='32px Arial';ctx.fillStyle=dark;ctx.fillText(c.sex,leftX+92,ly);
    // Right: surgery, department, surgeon and anesthetist as matching unboxed text rows.
