@@ -110,13 +110,30 @@ const surgeryDefault=["Post partum sterilization", "MROP", "Total Abdominal Hyst
 const surgeonDefault=["Dr Saranya Pullangot", "Dr Muhammed Jaseel", "Dr Mumthashar Ahammed TA", "Dr Abdul rasheed", "Dr Ashams", "Dr Abraham G Thomas", "Dr Ashwin Suresh", "Dr Mahima Mahamood", "Dr Nikhil"];
 const anaDefault=["Dr Muhammad shafi K"];
 const autoFields=[['surgery','surgery',surgeryDefault],['department','department',deptDefault],['surgeon','surgeon',surgeonDefault],['ana','ana',anaDefault]];
-function uniqueNames(items){const map=new Map();for(const raw of items){const name=clean(raw);const key=name.toLocaleLowerCase();if(name&&!map.has(key))map.set(key,name)}return [...map.values()].sort((a,b)=>a.localeCompare(b))}
-function candidates(field,base){return uniqueNames([...base,...records.map(row=>row[field])])}
+function candidates(field,base){
+ const ranked=new Map();let order=0;
+ const add=(raw,occurredAt=0)=>{
+  const name=clean(raw);if(!name)return;
+  const key=name.toLocaleLowerCase();
+  if(!ranked.has(key))ranked.set(key,{name,count:0,lastUsed:0,order:order++});
+  const item=ranked.get(key);
+  if(occurredAt){item.count++;item.lastUsed=Math.max(item.lastUsed,occurredAt)}
+ };
+ // Keep the curated defaults as fallback suggestions; saved records determine ranking.
+ base.forEach(name=>add(name));
+ for(const row of records){
+  const timestamp=Date.parse(row.updatedAt||row.createdAt||`${row.date||'1970-01-01'}T${row.time||'00:00'}:00+05:30`)||0;
+  add(row[field],timestamp||1);
+ }
+ return [...ranked.values()]
+  .sort((a,b)=>b.count-a.count||b.lastUsed-a.lastUsed||a.order-b.order)
+  .map(item=>item.name);
+}
 const autocompleteChosen=new Map();
 function closeSuggestions(except){for(const [id] of autoFields){if(id!==except){const list=$(id+'AutoList');list.hidden=true;$(id).setAttribute('aria-expanded','false')}}}
-function paintAutocomplete(id){const input=$(id),list=$(id+'AutoList');if(autocompleteChosen.get(id)===input.value){list.hidden=true;input.setAttribute('aria-expanded','false');closeSuggestions();return;}const meta=autoFields.find(row=>row[0]===id);if(!meta)return;const typed=clean(input.value).toLocaleLowerCase();const options=candidates(meta[1],meta[2]).filter(name=>!typed||name.toLocaleLowerCase().includes(typed)).sort((a,b)=>{
+function paintAutocomplete(id){const input=$(id),list=$(id+'AutoList');if(autocompleteChosen.get(id)===input.value){list.hidden=true;input.setAttribute('aria-expanded','false');closeSuggestions();return;}const meta=autoFields.find(row=>row[0]===id);if(!meta)return;const typed=clean(input.value).toLocaleLowerCase();const ranked=candidates(meta[1],meta[2]),rankOrder=new Map(ranked.map((name,index)=>[name,index]));const options=ranked.filter(name=>!typed||name.toLocaleLowerCase().includes(typed)).sort((a,b)=>{
 const aa=a.toLocaleLowerCase().startsWith(typed)?0:1,bb=b.toLocaleLowerCase().startsWith(typed)?0:1;
-return aa-bb||a.localeCompare(b)
+return aa-bb||rankOrder.get(a)-rankOrder.get(b)
 }).slice(0,12);
 list.replaceChildren();for(const name of options){const button=document.createElement('button');button.type='button';button.className='autocomplete-option';button.role='option';button.textContent=name;button.addEventListener('pointerdown',e=>e.preventDefault());button.addEventListener('click',()=>{input.value=name;autocompleteChosen.set(id,name);closeSuggestions();list.hidden=true;input.setAttribute('aria-expanded','false');if(id==='surgery'||id==='surgeon')duplicateCheck();input.blur()});list.appendChild(button)}
 list.hidden=!options.length;input.setAttribute('aria-expanded',String(!!options.length));closeSuggestions(id)}
