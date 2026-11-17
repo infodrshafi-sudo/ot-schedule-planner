@@ -233,20 +233,36 @@ async function renderOTCardImage(list,mode,date){
  const W=1190,margin=42,cardX=35,cardW=W-70,logo=await loadOTImageLogo();
  const navy='#103c68',blue='#17608b',dark='#152e43',muted='#375d74',stroke='#b5d1e4';
  const cases=list.map((r,i)=>({
-  no:i+1,time:displayTime(r.time),patient:imageDisplayText(r.patient),age:r.age?String(r.age):'—',
-  sex:imageDisplayText(r.sex||'—'),surgery:imageDisplayText(r.surgery),department:imageDisplayText(r.department),
+  no:i+1,time:displayTime(r.time),patient:imageDisplayText(r.patient),
+  age:r.age?String(r.age):'—',sex:imageDisplayText(r.sex||'—'),
+  ageSex:(r.age?String(r.age):'—')+'/'+(r.sex?String(r.sex):'—'),
+  surgery:imageDisplayText(r.surgery),department:imageDisplayText(r.department),
   surgeon:imageDisplayText(r.surgeon),ana:imageDisplayText(r.ana)
  }));
- // Calculate case height from wrapped values BEFORE allocating the canvas.
- const leftX=215,rightX=660,leftWidth=355,rightWidth=435;
+ // Two-column card: patient details and surgery on the left; clinical team on the right.
+ const leftX=215,rightX=660,divider=606,leftWidth=divider-leftX-28,rightWidth=435;
  const measure=(text,width,font)=>{ctx.font=font;return wrapImageText(ctx,text,width)};
  const specs=cases.map(c=>{
-  const patient=measure(c.patient,leftWidth,'bold 33px Arial'),surgery=measure(c.surgery,rightWidth,'bold 37px Arial'),
-  department=measure(c.department,rightWidth,'32px Arial'),surgeon=measure(c.surgeon,rightWidth,'bold 35px Arial'),
-  ana=measure(c.ana,rightWidth,'bold 35px Arial');
-  const lh= Math.max(265,68+56+38+patient.length*39+42+42);
-  const rh= 20+(25+surgery.length*43+15)+(24+department.length*39+15)+(25+surgeon.length*42+16)+(25+ana.length*42+16);
-  return {patient,surgery,department,surgeon,ana,h:Math.ceil(Math.max(lh,rh)+105)};
+  const patient=measure(c.patient,leftWidth,'bold 33px Arial');
+  const surgery=measure(c.surgery,leftWidth,'bold 37px Arial');
+  const department=measure(c.department,rightWidth,'32px Arial');
+  const surgeon=measure(c.surgeon,rightWidth,'bold 35px Arial');
+  const ana=measure(c.ana,rightWidth,'bold 35px Arial');
+
+  // Left column begins below the time badge.
+  let ly=110;
+  ly+=38+patient.length*39+12; // patient label + wrapped name
+  ly+=38+38+14;                // Age/Sex label + value
+  ly+=42+surgery.length*43+28; // Surgery label + wrapped surgery name
+  const leftBottom=ly;
+
+  // Right column also starts below the time badge.
+  let ry=110;
+  ry+=40+department.length*39+22;
+  ry+=40+surgeon.length*42+22;
+  ry+=40+ana.length*42+28;
+  const rightBottom=ry;
+  return {patient,surgery,department,surgeon,ana,h:Math.max(360,Math.ceil(Math.max(leftBottom,rightBottom)))};
  });
  const top=224,gap=22,footerH=125;
  const totalH=top+specs.reduce((sum,v)=>sum+v.h+gap,0)+footerH;
@@ -265,27 +281,41 @@ async function renderOTCardImage(list,mode,date){
  let y=top;
  for(let i=0;i<cases.length;i++){
    const c=cases[i],sp=specs[i],h=sp.h;
-   // Shadow-free card with border, light mint serial strip, and two-column content.
+   // Rounded case card with a mint serial-number strip.
    rr(cardX,y,cardW,h,24);ctx.fillStyle=i%2===0?'#fcfeff':'#f9fcfe';ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();
    ctx.save();rr(cardX,y,cardW,h,24);ctx.clip();ctx.fillStyle='#e9f8f5';ctx.fillRect(cardX,y,92,h);ctx.restore();
    rr(cardX+17,y+20,58,61,13);ctx.fillStyle='#14699a';ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 39px Arial';ctx.textAlign='center';ctx.fillText(String(c.no),cardX+46,y+65);ctx.textAlign='left';
-   const divider=606;ctx.strokeStyle='#c0d7e5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(divider,y+23);ctx.lineTo(divider,y+h-23);ctx.stroke();
-   // Left: time, patient, age, sex. Keep text wide and readable.
-   let ly=y+53;icon('◷',154,ly);label('Time:',leftX,ly);ctx.fillStyle=dark;ctx.font='32px Arial';ctx.fillText(c.time,leftX+105,ly);
-   ly+=62;icon('♙',154,ly);label('Patient Name:',leftX,ly);ly+=43;
-   ly=lineText(sp.patient,leftX,ly,39,'bold 33px Arial',dark)+10;
-   icon('▦',154,ly);label('Age:',leftX,ly);ctx.font='32px Arial';ctx.fillStyle=dark;ctx.fillText(c.age,leftX+93,ly);
-   ly+=53;icon('⚥',154,ly);label('Sex:',leftX,ly);ctx.font='32px Arial';ctx.fillStyle=dark;ctx.fillText(c.sex,leftX+92,ly);
-   // Right: surgery, department, surgeon and anesthetist as matching unboxed text rows.
-   let ry=y+48;
-   label('Surgery:',rightX,ry);ry+=42;
-   ry=lineText(sp.surgery,rightX,ry,43,'bold 37px Arial','#111b26')+4;
-   label('Department:',rightX,ry+12);ry+=56;
-   ry=lineText(sp.department,rightX,ry,39,'32px Arial',dark)+3;
-   label('Surgeon:',rightX,ry+10);ry+=51;
-   ry=lineText(sp.surgeon,rightX,ry,42,'bold 35px Arial','#111b26')+4;
-   label('Anesthetist:',rightX,ry+10);ry+=51;
-   ry=lineText(sp.ana,rightX,ry,42,'bold 35px Arial','#111b26')+4;
+
+   // Time badge is centred exactly over the middle divider.
+   const badgeW=320,badgeH=62,badgeX=divider-badgeW/2,badgeY=y+13;
+   rr(badgeX,badgeY,badgeW,badgeH,17);
+   const gradient=ctx.createLinearGradient(badgeX,badgeY,badgeX+badgeW,badgeY);
+   gradient.addColorStop(0,'#103c68');gradient.addColorStop(1,'#17608b');
+   ctx.fillStyle=gradient;ctx.fill();
+   ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';
+   ctx.fillText('◷  Time: '+c.time,divider,badgeY+42);ctx.textAlign='left';
+
+   // Divider begins below the time badge.
+   ctx.strokeStyle='#c0d7e5';ctx.lineWidth=2;ctx.beginPath();
+   ctx.moveTo(divider,y+88);ctx.lineTo(divider,y+h-23);ctx.stroke();
+
+   // Left column: patient name, combined age/sex, then surgery.
+   let ly=y+110;
+   icon('♙',154,ly);label('Patient Name:',leftX,ly);ly+=38;
+   ly=lineText(sp.patient,leftX,ly,39,'bold 33px Arial',dark)+12;
+   icon('▦',154,ly);label('Age/Sex:',leftX,ly);ly+=38;
+   ctx.font='bold 33px Arial';ctx.fillStyle=dark;ctx.fillText(c.ageSex,leftX,ly);ly+=52;
+   icon('✎',154,ly);label('Surgery:',leftX,ly);ly+=42;
+   lineText(sp.surgery,leftX,ly,43,'bold 37px Arial','#111b26');
+
+   // Right column: department, surgeon and anesthetist.
+   let ry=y+110;
+   label('Department:',rightX,ry);ry+=40;
+   ry=lineText(sp.department,rightX,ry,39,'32px Arial',dark)+22;
+   label('Surgeon:',rightX,ry);ry+=40;
+   ry=lineText(sp.surgeon,rightX,ry,42,'bold 35px Arial','#111b26')+22;
+   label('Anesthetist:',rightX,ry);ry+=40;
+   lineText(sp.ana,rightX,ry,42,'bold 35px Arial','#111b26');
    y+=h+gap;
  }
  rr(margin,y+14,315,73,17);ctx.fillStyle='#116193';ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 35px Arial';ctx.fillText('Total Cases: '+cases.length,margin+22,y+61);

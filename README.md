@@ -14,11 +14,13 @@ If a statement says `duplicate column name`, that column already exists; do not 
 Upload **OT_Planner_Update.zip** unchanged to the repository root, using the existing GitHub Actions extractor. Wait for a green Actions check and successful Cloudflare Pages deployment.
 
 ## Image sharing
-- Image sharing now creates a **single vertical PNG** with a Rivershore logo, OT date, and **one separate rounded card per surgery**.
-- Each card shows Time, Patient Name, Age, Sex (left); Surgery, Department, Surgeon, and **Anesthetist shown like Surgeon (no separate box)** (right).
-- Surgery and surgeon names are bold; long names wrap within their cards; number badge is narrow.
-- Existing WhatsApp plain-text sharing is unchanged.
-- Age/Sex are optional on the existing single surgery scheduling form; blank fields show an em dash in the image.
+- Image sharing creates a **single vertical PNG** with the Rivershore Hospital logo, OT date, and one rounded card per surgery.
+- The **time badge is centred over the middle divider**, near the top of each case card.
+- The left column shows Patient Name, combined **Age/Sex** (for example, `69/F`), and Surgery in that order.
+- The right column shows Department, Surgeon, and Anesthetist.
+- Surgery and staff names are bold; long names and surgery descriptions wrap within their columns.
+- Existing WhatsApp sharing and PNG download actions are unchanged.
+- Age and Sex remain optional on the existing surgery scheduling form; missing values display as em dashes.
 - Cloudflare D1 remains the sole shared data store; nothing moves to per-browser records.
 
 ## Important
@@ -46,3 +48,10 @@ The Share screen now shows the same surgery cards and Edit/Delete controls as th
 - Edit and Delete controls on Share's surgery cards remain available, as do Share Image and Download OT List.
 - An empty Share list shows a plain message without a Post New Case button.
 - No database migration required.
+
+
+## OT image layout update
+- Updated the exported OT-list PNG layout only; scheduling forms, records, API, database schema, and sharing actions are unchanged.
+- Time is displayed in a bold blue rounded badge centred directly above the vertical divider.
+- Patient Name, Age/Sex, and Surgery appear in the first column; Department, Surgeon, and Anesthetist remain in the second column.
+- No database migration is required for this layout update.
