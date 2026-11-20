@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'OT_Planner_Update.zip'
+      - '.github/workflows/publish-ot-planner.yml'
   workflow_dispatch:
 
 permissions:
@@ -32,7 +33,8 @@ jobs:
           if not archive.is_file():
               raise SystemExit('Upload OT_Planner_Update.zip to the repository root.')
           required = {'index.html','schema.sql','functions/api/_middleware.js','functions/api/cases.js','functions/api/cases/[id].js'}
-          allowed = required | {'README.md'}
+          pwa = {'manifest.webmanifest', 'sw.js', '_headers', 'icons/icon-192.png', 'icons/icon-512.png'}
+          allowed = required | {'README.md'} | pwa
           with zipfile.ZipFile(archive) as z:
               members = [f for f in z.infolist() if not f.is_dir()]
               names = [f.filename for f in members]
@@ -48,17 +50,27 @@ jobs:
                   target.write_bytes(z.read(f))
           Path('public').mkdir(exist_ok=True)
           Path('public/index.html').write_bytes(Path('index.html').read_bytes())
-          print('OT Planner extracted; public/index.html prepared for Cloudflare Pages.')
+          for name in pwa:
+              source = Path(name)
+              if name in names:
+                  target = Path('public') / name
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(source.read_bytes())
+          print('OT Planner extracted; public assets prepared for Cloudflare Pages.')
           PY
       - name: Commit published app files
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html schema.sql README.md functions/ public/index.html
+          git add index.html schema.sql README.md functions/ public/
+          for path in manifest.webmanifest sw.js _headers icons; do
+            if [ -e "$path" ]; then git add "$path"; fi
+          done
           if git diff --cached --quiet; then
             echo 'No website file changes needed.'
           else
             git commit -m 'Publish OT Planner update from ZIP'
             git push
           fi
+
