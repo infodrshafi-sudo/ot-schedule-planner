@@ -14,7 +14,8 @@ If either statement reports `duplicate column name`, that column already exists;
 ## Current app workflow
 
 - The app has three main sections: **Home**, **Post New Case**, and **Schedule**. There is no separate Share tab.
-- In **Schedule**, select the required date using the calendar field or the 14-day date strip.
+- The Schedule screen defaults to today's OT list before 2:00 PM IST and automatically defaults to tomorrow's list from 2:00 PM IST onward. If the app remains open across 2:00 PM, it switches to tomorrow automatically. The rule uses `Asia/Kolkata`, independent of the device timezone.
+- You can still select any other date manually using the calendar field or the 14-day date strip.
 - The selected day's surgery cards appear first. **Share to WhatsApp** and **Download OT List** appear directly below the schedule.
 - Both actions use the date currently selected in the Schedule calendar. There is no need to navigate to another screen.
 - Before generating an image, the app checks the latest Cloudflare D1 records. If the cloud is unavailable, sharing is paused until the schedule can be verified.
@@ -65,3 +66,6 @@ Do not place these files inside an extra nested folder. Deploy them to the same 
 ## Important
 
 The app has no staff login and remains publicly editable. Use fictional test patients only until access controls are introduced. Test image sharing on the target Android device after deployment.
+
+
+Compact header: Post New Case is now in the top header. The redundant Schedule heading and instruction are removed; the dated schedule title is retained.
