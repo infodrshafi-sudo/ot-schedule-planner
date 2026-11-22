@@ -106,10 +106,10 @@ body{background:#faf9fc}.shell{max-width:930px}.brand .logo,.btn,.sex-option[ari
 .date-control{display:grid;place-items:center;position:relative;background:#fffc;border-radius:20px;padding:6px 12px;min-height:40px;font-size:13px;font-weight:650;overflow:hidden}.date-control input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.date-control input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:auto;height:auto;cursor:pointer}.date-control:focus-within{outline:2px solid var(--violet)}
 #schedule .weekstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:stretch;gap:6px 2px;margin:0;padding:3px 0 6px}
 #schedule .weekstrip button,#schedule .weekstrip button.selected{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;gap:3px;border:0;box-shadow:none;padding:4px 2px 7px;background:transparent;color:var(--ink);border-radius:28px;min-height:80px}
-#schedule .weekstrip button b{display:grid;place-items:center;width:min(37px,100%);aspect-ratio:1;height:auto;margin:0 0 2px;border:1px solid #d6cade;border-radius:50%;font-size:15px;background:var(--case-heat);color:var(--ink)}
+#schedule .weekstrip button b{display:grid;place-items:center;width:min(37px,100%);aspect-ratio:1;height:auto;margin:0 0 2px;border:1px solid #d6cade;border-radius:50%;font-size:15px;background:#ffffffa6;color:var(--ink)}
 #schedule .weekstrip button.is-sunday b{border-color:#cb8292}#schedule .weekstrip button.is-friday b{border-color:#75a68a}
-#schedule .weekstrip button.selected{background:#d9c4f2}#schedule .weekstrip button.selected b{outline:2px solid #8c6caf;outline-offset:-1px}
-.add-line{display:flex;align-items:center;gap:12px;background:white;color:var(--muted);border:1px solid var(--line);border-radius:15px;padding:9px 15px;width:100%;margin:18px 0;font-weight:600;text-align:left}.add-line b{font-size:21px;color:var(--ink)}
+#schedule .weekstrip button,#schedule .weekstrip button.selected{background:var(--case-heat);border-radius:15px}#schedule .weekstrip button.selected{box-shadow:inset 0 0 0 2px #735097}#workloadAverage{display:block;margin-top:6px;color:var(--muted);font-size:12px}#schedule .weekstrip button.selected b{outline:2px solid #8c6caf;outline-offset:-1px}
+
 #scheduleTitle{margin:0}.case{--tint:#ede7fc;--disc:#7854bb;background:var(--tint);border:0;border-radius:18px;overflow-wrap:anywhere}
 .case:nth-child(3n+2){--tint:#fceae2;--disc:#a34c30}.case:nth-child(3n){--tint:#fcf3d9;--disc:#82642c}
 .caseheader{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:10px}.case-number{display:grid;place-items:center;background:var(--disc);color:white;border-radius:50%;width:36px;height:36px;font-size:13px;font-weight:700}.case h4{line-height:1.25}.case .time,.case .tag:first-child{background:#fffc;color:var(--ink)}.case .actions .btn{min-width:0}.case .actions .btn.light{margin-left:auto}
@@ -118,6 +118,16 @@ body{background:#faf9fc}.shell{max-width:930px}.brand .logo,.btn,.sex-option[ari
 @media(max-width:650px){body{background:white}.mobile-nav{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));padding:5px;border:1px solid var(--line);border-radius:38px;background:white;box-shadow:0 4px 22px #33264b18}.mobile-nav button{min-height:50px}.header{margin-bottom:10px}.calendar-head{padding-top:14px}.case .time{padding:5px 8px}.case .details{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.sectionhead{background:#f3ecfb;padding:16px;border-radius:20px}}
 
 #scheduleFreshness:empty{display:none}
+/* Compact brand row, with independent sizing for the action buttons. */
+.brand .logo{width:32.2px;height:32.2px;font-size:19px;border-radius:10px}
+.brand h1{font-size:14.7px}
+.brand p{font-size:10px;margin-top:1px}
+.calendar-head{margin-bottom:16px}
+@media(max-width:800px){
+ .brand .logo{width:28px;height:28px}
+ .brand h1{font-size:14px;line-height:16px}
+ .brand p{font-size:10px;line-height:12px;margin:0}
+}
 </style>
 </head>
 <body>
@@ -136,8 +146,8 @@ body{background:#faf9fc}.shell{max-width:930px}.brand .logo,.btn,.sex-option[ari
 <section class="page" id="schedule"><div class="panel"><header class="calendar-head">
 <div class="calendar-toolbar"><span class="calendar-icon" aria-hidden="true">▦</span><h2 id="dayHeading">Schedule</h2><span id="filterCount" class="tag"></span></div>
 <div class="calendar-date"><strong id="longDate"></strong><label class="date-control">Calendar<input type="date" id="filterDate" aria-label="Choose surgery date" required></label></div>
-<div class="weekstrip" id="weekStrip" aria-label="Next fourteen days and case counts"></div></header>
-<button class="add-line" data-tab="add" type="button"><b>＋</b> Post new case</button>
+<div class="weekstrip" id="weekStrip" aria-label="Next fourteen days and case counts"></div><small id="workloadAverage"></small></header>
+
 <div class="row"><h3 id="scheduleTitle">Scheduled surgeries</h3></div><div id="scheduleList"></div><div class="schedule-share-actions"><button id="imageShareBtn" class="btn whatsapp-image-button" type="button" aria-label="Share selected date's OT list image using WhatsApp"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.5L3 20.5l1.3-4.8A8.5 8.5 0 1 1 20.5 11.6Z"/><path d="M8.1 7.5c-.6.2-1.1 1-.9 2.1.5 2.7 3.2 5.4 5.9 5.9 1 .2 2-.3 2.2-.9l.4-1.1-2.4-1.2-.9 1c-1.4-.5-2.5-1.6-3-3l1-1-1.2-2.3Z"/></svg> Share to WhatsApp</button><button id="imageDownloadBtn" class="btn download-image-button" type="button" aria-label="Download selected date's OT list as PNG image"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/></svg> Download OT List</button></div><p class="statusnote" id="scheduleFreshness" role="status"></p></div></section>
 </main><footer class="footer">OT Planner · Shared Cloudflare D1 database · Times use India Standard Time (IST)</footer></div>
 <nav class="mobile-nav" aria-label="Mobile navigation"><button data-tab="home" class="active"><span>⌂</span>Home</button><button data-tab="add"><span>＋</span>Post</button><button data-tab="schedule"><span>▦</span>Schedule</button></nav><div id="toasts" class="toasts" aria-live="polite"></div>
@@ -221,15 +231,33 @@ const noCases=(msg)=>`<div class="empty"><b>No surgeries found</b><p>${escape(ms
 function home(){const now=getNow(),next=addDays(now.date,1),today=records.filter(r=>r.date===now.date),tomorrow=sorted(records.filter(r=>r.date===next));$('todayShort').textContent=displayDate(now.date);$('tomorrowShort').textContent=displayDate(next);$('todayCount').textContent=today.length;$('tomorrowCount').textContent=tomorrow.length;$('pendingCount').textContent=records.filter(r=>(r.date===now.date||r.date===next)&&isPending(r)).length;$('homeList').innerHTML=tomorrow.length?tomorrow.map(card).join(''):noCases('Post a case for tomorrow to see it here.')}
 function isPending(r){return !r.time||!r.patient}
 function setScheduleDate(iso){$('filterDate').value=iso;schedule()}
+function workloadColor(count, historicalCases) {
+ if (!count) return '#ffffff';
+ if (!historicalCases) return '#eee7fb';
+ // Compare against the unrounded average using integer percentages.
+ const scaled = count * 14 * 100;
+ if (scaled <= historicalCases * 70) return '#fff3e6';
+ if (scaled <= historicalCases * 100) return '#ffe0bb';
+ if (scaled <= historicalCases * 130) return '#ffc18d';
+ if (scaled <= historicalCases * 170) return '#fa957a';
+ return '#e35a5a';
+}
 function weekstrip(selectedDate){
  const today=getNow().date,days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
  const counts=new Map();for(const r of records)counts.set(r.date,(counts.get(r.date)||0)+1);
- // Case count is capped at 5 for color intensity; 5 or more uses the same red.
- const colors=['#ffffff','#fff3e6','#ffe0bb','#ffc18d','#fa957a','#e35a5a'];
+ const start = addDays(today, -14);
+ let historicalCases = 0;
+ for (const [date, count] of counts) {
+   if (date >= start && date < today) historicalCases += count;
+ }
+ const average = historicalCases / 14;
+ $('workloadAverage').textContent = historicalCases
+   ? 'Previous 14 days · ' + average.toLocaleString('en-IN',{maximumFractionDigits:2}) + ' cases/day'
+   : 'Previous 14 days · No cases recorded';
  $('weekStrip').innerHTML=Array.from({length:14},(_,i)=>{
    const value=addDays(today,i),d=new Date(value+'T12:00:00Z'),count=counts.get(value)||0,dayIndex=d.getUTCDay();
    const classes=[value===selectedDate?'selected':'',dayIndex===0?'is-sunday':'',dayIndex===5?'is-friday':''].filter(Boolean).join(' ');
-   return `<button type="button" data-day="${value}" style="--case-heat:${colors[Math.min(count,5)]}" class="${classes}" aria-label="${i===0?'Today, ':''}${displayDate(value)}, ${count} ${count===1?'case':'cases'}" aria-pressed="${value===selectedDate}"><b>${d.getUTCDate()}</b>${days[dayIndex]}<small>${count} ${count===1?'case':'cases'}</small></button>`;
+   return `<button type="button" data-day="${value}" style="--case-heat:${workloadColor(count,historicalCases)}" class="${classes}" aria-label="${i===0?'Today, ':''}${displayDate(value)}, ${count} ${count===1?'case':'cases'}" aria-pressed="${value===selectedDate}"><b>${d.getUTCDate()}</b>${days[dayIndex]}<small>${count} ${count===1?'case':'cases'}</small></button>`;
  }).join('');
 }
 function schedule(){
