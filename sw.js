@@ -1,5 +1,5 @@
 /* Rivershore OT Planner: app-shell caching only. Cloud records and API calls always go to the network. */
-const CACHE_NAME = 'rivershore-ot-shell-v5';
+const CACHE_NAME = 'rivershore-ot-shell-v6';
 const APP_SHELL = [
   './',
   './index.html',
