@@ -234,13 +234,11 @@ function setScheduleDate(iso){$('filterDate').value=iso;schedule()}
 function workloadColor(count, historicalCases) {
  if (!count) return '#ffffff';
  if (!historicalCases) return '#eee7fb';
- // Compare against the unrounded average using integer percentages.
- const scaled = count * 14 * 100;
- if (scaled <= historicalCases * 70) return '#fff3e6';
- if (scaled <= historicalCases * 100) return '#ffe0bb';
- if (scaled <= historicalCases * 130) return '#ffc18d';
- if (scaled <= historicalCases * 170) return '#fa957a';
- return '#e35a5a';
+ if (count === 1) return '#fff3e6';
+ if (count === 2) return '#ffe0bb';
+ if (count === 3) return '#ffc18d';
+ // Half the preceding 14-day total is the average weekly case count.
+ return count > historicalCases / 2 ? '#e35a5a' : '#fa957a';
 }
 function weekstrip(selectedDate){
  const today=getNow().date,days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
